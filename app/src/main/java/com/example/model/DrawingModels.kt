@@ -153,3 +153,22 @@ data class DrawingSettings(
     val autoMinimizeOnExecute: Boolean = true,
     val vibrationFeedback: Boolean = true
 )
+
+/**
+ * Chat message item for floating AI chat assistant window
+ */
+data class ChatMessage(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val sender: ChatSender,
+    val text: String,
+    val timestampMillis: Long = System.currentTimeMillis(),
+    val modelName: String? = null,
+    val isInstructionGenerated: Boolean = false,
+    val instructionSet: ArtHaxInstructionSet? = null
+)
+
+enum class ChatSender {
+    USER,
+    ASSISTANT,
+    SYSTEM
+}

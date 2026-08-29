@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Warning
@@ -88,6 +89,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.CalibrationBounds
 import com.example.model.ExecutionState
 import com.example.model.PuterAuthState
+import com.example.ui.components.CompactFloatingChatWindow
 import com.example.ui.components.CyberCanvas
 import com.example.ui.components.DraggableCutoutBox
 import com.example.ui.theme.BorderGlass
@@ -95,6 +97,7 @@ import com.example.ui.theme.CardBackground
 import com.example.ui.theme.CardBackgroundElevated
 import com.example.ui.theme.CyberBackground
 import com.example.ui.theme.CyberBlack
+import com.example.ui.components.PuterAuthSheet
 import com.example.ui.theme.NeonCyan
 import com.example.ui.theme.NeonCyanDark
 import com.example.ui.theme.NeonGreen
@@ -104,11 +107,13 @@ import com.example.ui.theme.NeonYellow
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
 import com.example.ui.viewmodel.MainViewModel
+import com.example.ui.viewmodel.PuterAuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
+    puterAuthViewModel: PuterAuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -126,6 +131,7 @@ fun MainScreen(
     val execState by viewModel.executionState.collectAsState()
     val settings by viewModel.drawingSettings.collectAsState()
     val bounds by viewModel.calibrationBounds.collectAsState()
+    val chatMessages by viewModel.chatMessages.collectAsState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val heroGlow by infiniteTransition.animateFloat(
@@ -140,6 +146,8 @@ fun MainScreen(
 
     var showCalibrateSliders by remember { mutableStateOf(false) }
     var isCutoutInteractiveMode by remember { mutableStateOf(false) }
+    var showFloatingChatWindow by remember { mutableStateOf(true) }
+    var showPuterAuthSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier
@@ -149,13 +157,14 @@ fun MainScreen(
             .navigationBarsPadding(),
         containerColor = CyberBackground
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // ==========================================
@@ -242,7 +251,7 @@ fun MainScreen(
                     isActive = sdkReady,
                     activeColor = NeonPurple,
                     inactiveColor = TextMuted,
-                    onClick = {}
+                    onClick = { showPuterAuthSheet = true }
                 )
             }
 
@@ -659,20 +668,20 @@ fun MainScreen(
 
                         if (puterAuthState.isSignedIn) {
                             Button(
-                                onClick = { viewModel.logoutFromPuter() },
+                                onClick = { showPuterAuthSheet = true },
                                 colors = ButtonDefaults.buttonColors(containerColor = NeonPink.copy(alpha = 0.25f)),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink),
                                 shape = RoundedCornerShape(16.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.testTag("puter_logout_btn")
+                                modifier = Modifier.testTag("puter_account_btn")
                             ) {
-                                Icon(Icons.Default.Logout, contentDescription = null, tint = NeonPink, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = NeonPink, modifier = Modifier.size(14.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("LOGOUT", color = NeonPink, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                                Text("ACCOUNT", color = NeonPink, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                             }
                         } else {
                             Button(
-                                onClick = { viewModel.loginToPuter() },
+                                onClick = { showPuterAuthSheet = true },
                                 colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
                                 shape = RoundedCornerShape(16.dp),
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
@@ -680,7 +689,7 @@ fun MainScreen(
                             ) {
                                 Icon(Icons.Default.Login, contentDescription = null, tint = CyberBlack, modifier = Modifier.size(14.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("LOGIN", color = CyberBlack, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                                Text("SIGN IN / MODELS", color = CyberBlack, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -838,9 +847,67 @@ fun MainScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+
+        // Floating Chat Window Overlay
+        AnimatedVisibility(
+            visible = showFloatingChatWindow,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            CompactFloatingChatWindow(
+                messages = chatMessages,
+                currentPrompt = promptText,
+                onPromptChange = { viewModel.setPrompt(it) },
+                onSendPrompt = { viewModel.sendChatMessage(it) },
+                availableModels = viewModel.availableModels,
+                selectedModelId = selectedModel,
+                onSelectModel = { viewModel.selectModel(it) },
+                executionState = execState,
+                onExecuteDrawing = { viewModel.startSandboxSimulation() },
+                onClearChat = { viewModel.clearChat() },
+                onClose = { showFloatingChatWindow = false }
+            )
+        }
+
+        // Floating trigger button when chat window is closed
+        if (!showFloatingChatWindow) {
+            Button(
+                onClick = { showFloatingChatWindow = true },
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .size(52.dp)
+                    .shadow(12.dp, CircleShape, spotColor = NeonCyan)
+                    .testTag("open_floating_chat_fab")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = "Open AI Chat Assistant",
+                    tint = CyberBlack,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // Puter.js Auth & AI Model Browser Sheet Overlay
+        AnimatedVisibility(
+            visible = showPuterAuthSheet,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            PuterAuthSheet(
+                viewModel = puterAuthViewModel,
+                onDismiss = { showPuterAuthSheet = false }
+            )
         }
     }
+}
 }
 
 @Composable

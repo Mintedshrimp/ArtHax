@@ -12,6 +12,8 @@ import com.example.ai.PuterJsBridge
 import com.example.model.AiModelOption
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.CalibrationBounds
+import com.example.model.ChatMessage
+import com.example.model.ChatSender
 import com.example.model.DrawingPoint
 import com.example.model.DrawingSettings
 import com.example.model.DrawingStroke
@@ -83,11 +85,56 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _drawingSettings = MutableStateFlow(DrawingSettings())
     val drawingSettings: StateFlow<DrawingSettings> = _drawingSettings.asStateFlow()
 
+    // Floating AI Chat Messages
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(
+        listOf(
+            ChatMessage(
+                sender = ChatSender.ASSISTANT,
+                text = "Hello! I am your ArtHax AI vector assistant. Ask me to draw anything or pick a preset!",
+                modelName = "Claude 3.5 Sonnet"
+            )
+        )
+    )
+    val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages.asStateFlow()
+
     private var activeSimJob: Job? = null
 
     init {
         // Generate initial preset artwork for rich immediate preview
         generateStrokes("Sekai Chibi Hatsune Miku", "claude-3-5-sonnet")
+    }
+
+    fun sendChatMessage(prompt: String) {
+        if (prompt.isBlank()) return
+        val model = _selectedModel.value
+        val userMsg = ChatMessage(sender = ChatSender.USER, text = prompt)
+        val currentList = _chatMessages.value.toMutableList()
+        currentList.add(userMsg)
+        _chatMessages.value = currentList
+        _promptText.value = prompt
+
+        viewModelScope.launch {
+            _executionState.value = ExecutionState.Generating(0.3f, "Synthesizing vector paths via $model...")
+            val result = puterBridge.generateDrawingInstructions(prompt, model)
+            _currentInstructionSet.value = result
+            _executionState.value = ExecutionState.Ready(result)
+
+            val modelName = availableModels.find { it.id == model }?.name ?: model
+            val aiMsg = ChatMessage(
+                sender = ChatSender.ASSISTANT,
+                text = "Synthesized ${result.strokes.size} vector stroke paths for '$prompt'. Ready to draw!",
+                modelName = modelName,
+                isInstructionGenerated = true,
+                instructionSet = result
+            )
+            val updatedList = _chatMessages.value.toMutableList()
+            updatedList.add(aiMsg)
+            _chatMessages.value = updatedList
+        }
+    }
+
+    fun clearChat() {
+        _chatMessages.value = emptyList()
     }
 
     fun refreshServiceStatus() {

@@ -8,17 +8,22 @@ import androidx.activity.viewModels
 import com.example.ui.screens.MainScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.MainViewModel
+import com.example.ui.viewmodel.PuterAuthViewModel
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+    private val puterAuthViewModel: PuterAuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                MainScreen(viewModel = viewModel)
+                MainScreen(
+                    viewModel = viewModel,
+                    puterAuthViewModel = puterAuthViewModel
+                )
             }
         }
     }
@@ -26,6 +31,8 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshServiceStatus()
+        puterAuthViewModel.refreshAuthStatus()
     }
 }
+
 

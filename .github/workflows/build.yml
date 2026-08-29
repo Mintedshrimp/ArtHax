@@ -22,8 +22,14 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew || true
+      - name: Setup Gradle Wrapper
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper || true
+          fi
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+          fi
 
       - name: Prepare Keystores for Build
         run: |
@@ -37,14 +43,24 @@ jobs:
           fi
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleDebug
+          else
+            gradle assembleDebug
+          fi
 
       - name: Build Release APK
         env:
           STORE_PASSWORD: android
           KEY_PASSWORD: android
           KEYSTORE_PATH: my-upload-key.jks
-        run: ./gradlew assembleRelease
+        run: |
+          if [ -f gradlew ]; then
+            ./gradlew assembleRelease
+          else
+            gradle assembleRelease
+          fi
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
