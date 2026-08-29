@@ -1,0 +1,7 @@
+{
+  "name": "ArtHax",
+  "description": "AI-powered floating overlay drawing assistant for canvas games & apps using Puter.js and gesture accessibility.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

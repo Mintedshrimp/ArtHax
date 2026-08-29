@@ -1,0 +1,1309 @@
+package com.example.ai
+
+import com.example.model.ArtHaxInstructionSet
+import com.example.model.DrawingPoint
+import com.example.model.DrawingStroke
+import com.example.model.StrokeType
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.UUID
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+
+/**
+ * Intelligent Vector Engine that parses AI JSON responses and generates
+ * procedural vector stroke blueprints for ArtHax.
+ */
+object StrokeSynthesisEngine {
+
+    /**
+     * Parses JSON string from AI model into ArtHaxInstructionSet
+     */
+    fun parseAiJsonResponse(
+        jsonString: String,
+        prompt: String,
+        model: String
+    ): ArtHaxInstructionSet? {
+        return try {
+            // Find JSON content inside potential markdown code blocks
+            val cleanJson = extractJsonPayload(jsonString)
+            val jsonObject = JSONObject(cleanJson)
+            val strokesArray = jsonObject.optJSONArray("strokes") ?: jsonObject.optJSONArray("paths")
+            if (strokesArray == null || strokesArray.length() == 0) return null
+
+            val strokesList = mutableListOf<DrawingStroke>()
+            for (i in 0 until strokesArray.length()) {
+                val item = strokesArray.getJSONObject(i)
+                val color = item.optString("color", "#00F0FF")
+                val width = item.optDouble("size", item.optDouble("width", 4.0)).toFloat()
+                val pointsArray = item.optJSONArray("points") ?: JSONArray()
+                
+                val pointsList = mutableListOf<DrawingPoint>()
+                for (j in 0 until pointsArray.length()) {
+                    val p = pointsArray.getJSONObject(j)
+                    val x = p.optDouble("x", 0.5).toFloat().coerceIn(0f, 1f)
+                    val y = p.optDouble("y", 0.5).toFloat().coerceIn(0f, 1f)
+                    pointsList.add(DrawingPoint(x, y))
+                }
+
+                if (pointsList.isNotEmpty()) {
+                    strokesList.add(
+                        DrawingStroke(
+                            id = UUID.randomUUID().toString(),
+                            points = pointsList,
+                            colorHex = color,
+                            strokeWidth = width,
+                            strokeType = StrokeType.CURVE
+                        )
+                    )
+                }
+            }
+
+            if (strokesList.isEmpty()) null
+            else ArtHaxInstructionSet(
+                id = UUID.randomUUID().toString(),
+                title = jsonObject.optString("title", prompt.take(24)),
+                prompt = prompt,
+                model = model,
+                strokes = strokesList
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun extractJsonPayload(text: String): String {
+        val trimmed = text.trim()
+        val startIndex = trimmed.indexOf('{')
+        val endIndex = trimmed.lastIndexOf('}')
+        return if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+            trimmed.substring(startIndex, endIndex + 1)
+        } else {
+            trimmed
+        }
+    }
+
+    /**
+     * Synthesizes rich vector art strokes for any prompt (presets & custom queries).
+     */
+    fun synthesizeArtwork(
+        prompt: String,
+        modelName: String = "puter-art-v1"
+    ): ArtHaxInstructionSet {
+        val lower = prompt.lowercase()
+        val strokes = when {
+            lower.contains("miku") || lower.contains("hatsune") || lower.contains("chibi") || lower.contains("sekai") -> {
+                generateChibiMiku()
+            }
+            lower.contains("skull") || lower.contains("cyber skull") -> {
+                generateCyberSkull()
+            }
+            lower.contains("cat") || lower.contains("neko") || lower.contains("kitten") -> {
+                generateCyberCat()
+            }
+            lower.contains("dragon") || lower.contains("wyvern") -> {
+                generateNeonDragon()
+            }
+            lower.contains("sakura") || lower.contains("flower") || lower.contains("blossom") -> {
+                generateSakuraBlossom()
+            }
+            lower.contains("heart") || lower.contains("love") || lower.contains("pixel") -> {
+                generateNeonPixelHeart()
+            }
+            lower.contains("star") || lower.contains("stellar") -> {
+                generateCyberStar()
+            }
+            lower.contains("sunset") || lower.contains("retrowave") || lower.contains("synthwave") -> {
+                generateRetroSunset()
+            }
+            lower.contains("sword") || lower.contains("katana") || lower.contains("blade") -> {
+                generateCyberKatana()
+            }
+            lower.contains("mask") || lower.contains("samurai") || lower.contains("oni") -> {
+                generateOniMask()
+            }
+            else -> {
+                generateDynamicProceduralArt(prompt)
+            }
+        }
+
+        return ArtHaxInstructionSet(
+            id = UUID.randomUUID().toString(),
+            title = prompt.take(30).replaceFirstChar { it.uppercase() },
+            prompt = prompt,
+            model = modelName,
+            strokes = strokes
+        )
+    }
+
+    // ==========================================
+    // PROCEDURAL ART GENERATORS
+    // ==========================================
+
+    private fun generateChibiMiku(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val dark = "#FFFFFF"
+        val green = "#00FF88"
+
+        // Left Twintail
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.35f, 0.35f),
+                    DrawingPoint(0.20f, 0.38f),
+                    DrawingPoint(0.12f, 0.55f),
+                    DrawingPoint(0.16f, 0.82f),
+                    DrawingPoint(0.22f, 0.72f),
+                    DrawingPoint(0.20f, 0.48f),
+                    DrawingPoint(0.34f, 0.42f)
+                ),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Right Twintail
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.65f, 0.35f),
+                    DrawingPoint(0.80f, 0.38f),
+                    DrawingPoint(0.88f, 0.55f),
+                    DrawingPoint(0.84f, 0.82f),
+                    DrawingPoint(0.78f, 0.72f),
+                    DrawingPoint(0.80f, 0.48f),
+                    DrawingPoint(0.66f, 0.42f)
+                ),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Head Outline
+        list.add(
+            createCircleStroke(0.50f, 0.45f, 0.22f, color = dark, width = 4.5f, segments = 32)
+        )
+
+        // Hair Bangs
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.28f, 0.42f),
+                    DrawingPoint(0.36f, 0.48f),
+                    DrawingPoint(0.42f, 0.38f),
+                    DrawingPoint(0.50f, 0.50f),
+                    DrawingPoint(0.58f, 0.38f),
+                    DrawingPoint(0.64f, 0.48f),
+                    DrawingPoint(0.72f, 0.42f)
+                ),
+                color = cyan,
+                width = 5.5f
+            )
+        )
+
+        // Left Eye (Anime Sparkle)
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.38f, 0.44f),
+                    DrawingPoint(0.43f, 0.43f),
+                    DrawingPoint(0.44f, 0.49f),
+                    DrawingPoint(0.39f, 0.50f),
+                    DrawingPoint(0.38f, 0.44f)
+                ),
+                color = cyan,
+                width = 4f
+            )
+        )
+        // Left pupil highlight
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.40f, 0.46f), DrawingPoint(0.42f, 0.46f)),
+                color = "#FFFFFF",
+                width = 3f
+            )
+        )
+
+        // Right Eye
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.57f, 0.43f),
+                    DrawingPoint(0.62f, 0.44f),
+                    DrawingPoint(0.61f, 0.50f),
+                    DrawingPoint(0.56f, 0.49f),
+                    DrawingPoint(0.57f, 0.43f)
+                ),
+                color = cyan,
+                width = 4f
+            )
+        )
+        // Right pupil highlight
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.58f, 0.46f), DrawingPoint(0.60f, 0.46f)),
+                color = "#FFFFFF",
+                width = 3f
+            )
+        )
+
+        // Blush Cheeks
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.34f, 0.52f), DrawingPoint(0.37f, 0.52f)),
+                color = pink,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.63f, 0.52f), DrawingPoint(0.66f, 0.52f)),
+                color = pink,
+                width = 3f
+            )
+        )
+
+        // Cute Smile
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.47f, 0.54f),
+                    DrawingPoint(0.50f, 0.57f),
+                    DrawingPoint(0.53f, 0.54f)
+                ),
+                color = pink,
+                width = 3.5f
+            )
+        )
+
+        // Headset / Mic
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.70f, 0.42f),
+                    DrawingPoint(0.73f, 0.48f),
+                    DrawingPoint(0.68f, 0.56f),
+                    DrawingPoint(0.58f, 0.58f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        // Body & Tie
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.42f, 0.67f),
+                    DrawingPoint(0.38f, 0.88f),
+                    DrawingPoint(0.62f, 0.88f),
+                    DrawingPoint(0.58f, 0.67f)
+                ),
+                color = dark,
+                width = 4f
+            )
+        )
+        // Sekai Necktie
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.50f, 0.68f),
+                    DrawingPoint(0.48f, 0.72f),
+                    DrawingPoint(0.50f, 0.84f),
+                    DrawingPoint(0.52f, 0.72f),
+                    DrawingPoint(0.50f, 0.68f)
+                ),
+                color = cyan,
+                width = 4f
+            )
+        )
+
+        // Glowing Star Accent
+        list.add(
+            createStarStroke(0.82f, 0.22f, 0.06f, color = green, width = 3f)
+        )
+
+        return list
+    }
+
+    private fun generateCyberSkull(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val yellow = "#FFE600"
+
+        // Cranium dome
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.25f, 0.50f),
+                    DrawingPoint(0.20f, 0.28f),
+                    DrawingPoint(0.50f, 0.15f),
+                    DrawingPoint(0.80f, 0.28f),
+                    DrawingPoint(0.75f, 0.50f)
+                ),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Cheekbones and Jaw
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.25f, 0.50f),
+                    DrawingPoint(0.30f, 0.60f),
+                    DrawingPoint(0.35f, 0.62f),
+                    DrawingPoint(0.35f, 0.78f),
+                    DrawingPoint(0.65f, 0.78f),
+                    DrawingPoint(0.65f, 0.62f),
+                    DrawingPoint(0.70f, 0.60f),
+                    DrawingPoint(0.75f, 0.50f)
+                ),
+                color = cyan,
+                width = 4.5f
+            )
+        )
+
+        // Cyber Visor / Left Eye Socket
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.32f, 0.42f),
+                    DrawingPoint(0.44f, 0.40f),
+                    DrawingPoint(0.42f, 0.54f),
+                    DrawingPoint(0.32f, 0.52f),
+                    DrawingPoint(0.32f, 0.42f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        // Right Cyber Optics
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.56f, 0.40f),
+                    DrawingPoint(0.68f, 0.42f),
+                    DrawingPoint(0.68f, 0.52f),
+                    DrawingPoint(0.58f, 0.54f),
+                    DrawingPoint(0.56f, 0.40f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        // Glowing HUD Crosshair inside right optic
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.62f, 0.43f), DrawingPoint(0.62f, 0.51f)),
+                color = yellow,
+                width = 2.5f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.58f, 0.47f), DrawingPoint(0.66f, 0.47f)),
+                color = yellow,
+                width = 2.5f
+            )
+        )
+
+        // Nose Cavity
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.50f, 0.56f),
+                    DrawingPoint(0.46f, 0.64f),
+                    DrawingPoint(0.54f, 0.64f),
+                    DrawingPoint(0.50f, 0.56f)
+                ),
+                color = cyan,
+                width = 3.5f
+            )
+        )
+
+        // Cyber Teeth Grille
+        for (xStep in listOf(0.40f, 0.46f, 0.52f, 0.58f)) {
+            list.add(
+                createPolyStroke(
+                    listOf(
+                        DrawingPoint(xStep, 0.68f),
+                        DrawingPoint(xStep, 0.78f)
+                    ),
+                    color = "#FFFFFF",
+                    width = 3f
+                )
+            )
+        }
+
+        // Horizontal teeth separator
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.35f, 0.73f), DrawingPoint(0.65f, 0.73f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+
+        // Circuit Glitch Lines
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.20f, 0.28f),
+                    DrawingPoint(0.12f, 0.28f),
+                    DrawingPoint(0.08f, 0.38f)
+                ),
+                color = pink,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.80f, 0.28f),
+                    DrawingPoint(0.88f, 0.28f),
+                    DrawingPoint(0.92f, 0.42f),
+                    DrawingPoint(0.86f, 0.46f)
+                ),
+                color = pink,
+                width = 3f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateCyberCat(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val white = "#FFFFFF"
+
+        // Cat Head & Ears
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.30f, 0.35f), // Top left forehead
+                    DrawingPoint(0.20f, 0.18f), // Left ear tip
+                    DrawingPoint(0.36f, 0.28f), // Left ear base
+                    DrawingPoint(0.64f, 0.28f), // Right ear base
+                    DrawingPoint(0.80f, 0.18f), // Right ear tip
+                    DrawingPoint(0.70f, 0.35f), // Top right forehead
+                    DrawingPoint(0.82f, 0.55f), // Right cheek
+                    DrawingPoint(0.65f, 0.75f), // Right chin
+                    DrawingPoint(0.35f, 0.75f), // Left chin
+                    DrawingPoint(0.18f, 0.55f), // Left cheek
+                    DrawingPoint(0.30f, 0.35f)  // Back to start
+                ),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Inner Ears
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.24f, 0.22f),
+                    DrawingPoint(0.32f, 0.28f),
+                    DrawingPoint(0.25f, 0.30f)
+                ),
+                color = pink,
+                width = 3.5f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.76f, 0.22f),
+                    DrawingPoint(0.68f, 0.28f),
+                    DrawingPoint(0.75f, 0.30f)
+                ),
+                color = pink,
+                width = 3.5f
+            )
+        )
+
+        // Left Cyber Eye (Almond shape)
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.32f, 0.48f),
+                    DrawingPoint(0.42f, 0.43f),
+                    DrawingPoint(0.44f, 0.52f),
+                    DrawingPoint(0.34f, 0.54f),
+                    DrawingPoint(0.32f, 0.48f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        // Right Cyber Eye
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.58f, 0.43f),
+                    DrawingPoint(0.68f, 0.48f),
+                    DrawingPoint(0.66f, 0.54f),
+                    DrawingPoint(0.56f, 0.52f),
+                    DrawingPoint(0.58f, 0.43f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        // Eye Slits
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.38f, 0.45f), DrawingPoint(0.38f, 0.52f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.62f, 0.45f), DrawingPoint(0.62f, 0.52f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+
+        // Cute Nose & Mouth
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.47f, 0.58f),
+                    DrawingPoint(0.53f, 0.58f),
+                    DrawingPoint(0.50f, 0.62f),
+                    DrawingPoint(0.47f, 0.58f)
+                ),
+                color = pink,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.42f, 0.65f),
+                    DrawingPoint(0.50f, 0.62f),
+                    DrawingPoint(0.58f, 0.65f)
+                ),
+                color = white,
+                width = 3f
+            )
+        )
+
+        // Whiskers Left
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.12f, 0.54f), DrawingPoint(0.28f, 0.57f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.10f, 0.64f), DrawingPoint(0.28f, 0.63f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+
+        // Whiskers Right
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.72f, 0.57f), DrawingPoint(0.88f, 0.54f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.72f, 0.63f), DrawingPoint(0.90f, 0.64f)),
+                color = cyan,
+                width = 3f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateNeonDragon(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val yellow = "#FFE600"
+
+        // Dragon Head Snout
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.20f, 0.45f),
+                    DrawingPoint(0.35f, 0.38f),
+                    DrawingPoint(0.50f, 0.32f),
+                    DrawingPoint(0.65f, 0.22f), // Horn top
+                    DrawingPoint(0.55f, 0.35f),
+                    DrawingPoint(0.75f, 0.26f), // Second horn
+                    DrawingPoint(0.60f, 0.42f),
+                    DrawingPoint(0.55f, 0.52f),
+                    DrawingPoint(0.38f, 0.58f),
+                    DrawingPoint(0.22f, 0.54f),
+                    DrawingPoint(0.20f, 0.45f)
+                ),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Glowing Dragon Eye
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.42f, 0.42f),
+                    DrawingPoint(0.48f, 0.40f),
+                    DrawingPoint(0.45f, 0.46f),
+                    DrawingPoint(0.42f, 0.42f)
+                ),
+                color = yellow,
+                width = 4f
+            )
+        )
+
+        // Fangs
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.26f, 0.54f), DrawingPoint(0.28f, 0.60f), DrawingPoint(0.30f, 0.55f)),
+                color = "#FFFFFF",
+                width = 3.5f
+            )
+        )
+
+        // S-Curve Serpentine Body
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.55f, 0.52f),
+                    DrawingPoint(0.72f, 0.60f),
+                    DrawingPoint(0.78f, 0.78f),
+                    DrawingPoint(0.55f, 0.88f),
+                    DrawingPoint(0.32f, 0.82f),
+                    DrawingPoint(0.25f, 0.70f),
+                    DrawingPoint(0.18f, 0.85f)
+                ),
+                color = cyan,
+                width = 6f
+            )
+        )
+
+        // Dragon Spines
+        val spinePoints = listOf(
+            DrawingPoint(0.68f, 0.56f) to DrawingPoint(0.74f, 0.52f),
+            DrawingPoint(0.77f, 0.70f) to DrawingPoint(0.85f, 0.68f),
+            DrawingPoint(0.68f, 0.86f) to DrawingPoint(0.72f, 0.94f),
+            DrawingPoint(0.45f, 0.87f) to DrawingPoint(0.42f, 0.95f),
+            DrawingPoint(0.28f, 0.76f) to DrawingPoint(0.20f, 0.72f)
+        )
+        for ((p1, p2) in spinePoints) {
+            list.add(createPolyStroke(listOf(p1, p2), color = pink, width = 4f))
+        }
+
+        // Flame Breath
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.20f, 0.48f),
+                    DrawingPoint(0.12f, 0.46f),
+                    DrawingPoint(0.05f, 0.52f),
+                    DrawingPoint(0.10f, 0.58f),
+                    DrawingPoint(0.04f, 0.65f)
+                ),
+                color = pink,
+                width = 4.5f
+            )
+        )
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.18f, 0.50f),
+                    DrawingPoint(0.10f, 0.52f),
+                    DrawingPoint(0.06f, 0.60f)
+                ),
+                color = yellow,
+                width = 3.5f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateSakuraBlossom(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val pink = "#FF00E5"
+        val lightPink = "#FF80F0"
+        val yellow = "#FFE600"
+        val cyan = "#00F0FF"
+
+        val centerX = 0.50f
+        val centerY = 0.50f
+        val radius = 0.28f
+
+        // 5 Petals
+        for (i in 0 until 5) {
+            val angle = (i * 72.0 * PI / 180.0)
+            val pX = (centerX + radius * cos(angle)).toFloat()
+            val pY = (centerY + radius * sin(angle)).toFloat()
+
+            val leftAngle = angle - 0.35
+            val rightAngle = angle + 0.35
+            val notchAngle = angle
+
+            val cp1X = (centerX + (radius * 0.95f) * cos(leftAngle)).toFloat()
+            val cp1Y = (centerY + (radius * 0.95f) * sin(leftAngle)).toFloat()
+            val cp2X = (centerX + (radius * 0.95f) * cos(rightAngle)).toFloat()
+            val cp2Y = (centerY + (radius * 0.95f) * sin(rightAngle)).toFloat()
+            val notchX = (centerX + (radius * 0.82f) * cos(notchAngle)).toFloat()
+            val notchY = (centerY + (radius * 0.82f) * sin(notchAngle)).toFloat()
+
+            list.add(
+                createBezierStroke(
+                    listOf(
+                        DrawingPoint(centerX, centerY),
+                        DrawingPoint(cp1X, cp1Y),
+                        DrawingPoint(pX, pY),
+                        DrawingPoint(notchX, notchY),
+                        DrawingPoint(cp2X, cp2Y),
+                        DrawingPoint(centerX, centerY)
+                    ),
+                    color = pink,
+                    width = 4.5f
+                )
+            )
+
+            // Inner petal line
+            list.add(
+                createPolyStroke(
+                    listOf(
+                        DrawingPoint(centerX, centerY),
+                        DrawingPoint((centerX + pX) / 2f, (centerY + pY) / 2f)
+                    ),
+                    color = lightPink,
+                    width = 2.5f
+                )
+            )
+        }
+
+        // Center Pistil / Stamen
+        list.add(
+            createCircleStroke(centerX, centerY, 0.04f, color = yellow, width = 4f, segments = 12)
+        )
+
+        // Cyber Aura Accents
+        list.add(
+            createStarStroke(0.18f, 0.22f, 0.05f, color = cyan, width = 3f)
+        )
+        list.add(
+            createStarStroke(0.82f, 0.78f, 0.05f, color = cyan, width = 3f)
+        )
+
+        return list
+    }
+
+    private fun generateNeonPixelHeart(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val pink = "#FF00E5"
+        val cyan = "#00F0FF"
+        val white = "#FFFFFF"
+
+        // Heart Outline
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.50f, 0.78f),
+                    DrawingPoint(0.20f, 0.58f),
+                    DrawingPoint(0.18f, 0.32f),
+                    DrawingPoint(0.35f, 0.24f),
+                    DrawingPoint(0.50f, 0.38f),
+                    DrawingPoint(0.65f, 0.24f),
+                    DrawingPoint(0.82f, 0.32f),
+                    DrawingPoint(0.80f, 0.58f),
+                    DrawingPoint(0.50f, 0.78f)
+                ),
+                color = pink,
+                width = 6f
+            )
+        )
+
+        // Inner Pulsing Heart
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.50f, 0.68f),
+                    DrawingPoint(0.30f, 0.54f),
+                    DrawingPoint(0.28f, 0.38f),
+                    DrawingPoint(0.40f, 0.32f),
+                    DrawingPoint(0.50f, 0.42f),
+                    DrawingPoint(0.60f, 0.32f),
+                    DrawingPoint(0.72f, 0.38f),
+                    DrawingPoint(0.70f, 0.54f),
+                    DrawingPoint(0.50f, 0.68f)
+                ),
+                color = cyan,
+                width = 3.5f
+            )
+        )
+
+        // Cyber Glitch Highlight
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.28f, 0.36f),
+                    DrawingPoint(0.34f, 0.30f),
+                    DrawingPoint(0.42f, 0.34f)
+                ),
+                color = white,
+                width = 4f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateCyberStar(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val yellow = "#FFE600"
+        val pink = "#FF00E5"
+
+        // 8-Point Cyber Star
+        val pts = mutableListOf<DrawingPoint>()
+        val numPoints = 8
+        for (i in 0 until (numPoints * 2 + 1)) {
+            val r = if (i % 2 == 0) 0.36f else 0.15f
+            val angle = (i * Math.PI / numPoints) - (Math.PI / 2.0)
+            pts.add(
+                DrawingPoint(
+                    (0.50f + r * cos(angle)).toFloat(),
+                    (0.50f + r * sin(angle)).toFloat()
+                )
+            )
+        }
+        list.add(createPolyStroke(pts, color = cyan, width = 5f))
+
+        // Center Ring
+        list.add(createCircleStroke(0.50f, 0.50f, 0.08f, color = yellow, width = 4f, segments = 16))
+
+        // Cross flares
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.50f, 0.08f), DrawingPoint(0.50f, 0.92f)),
+                color = pink,
+                width = 3.5f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.08f, 0.50f), DrawingPoint(0.92f, 0.50f)),
+                color = pink,
+                width = 3.5f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateRetroSunset(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val pink = "#FF00E5"
+        val yellow = "#FFE600"
+        val cyan = "#00F0FF"
+
+        // Sun Arch
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.20f, 0.58f),
+                    DrawingPoint(0.22f, 0.30f),
+                    DrawingPoint(0.50f, 0.18f),
+                    DrawingPoint(0.78f, 0.30f),
+                    DrawingPoint(0.80f, 0.58f)
+                ),
+                color = yellow,
+                width = 5.5f
+            )
+        )
+
+        // Sun Horizontal Blinds (Synthwave slices)
+        val ySlices = listOf(0.38f, 0.44f, 0.50f, 0.56f)
+        for (y in ySlices) {
+            list.add(
+                createPolyStroke(
+                    listOf(DrawingPoint(0.25f, y), DrawingPoint(0.75f, y)),
+                    color = pink,
+                    width = 4f
+                )
+            )
+        }
+
+        // Horizon line
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.05f, 0.60f), DrawingPoint(0.95f, 0.60f)),
+                color = cyan,
+                width = 5f
+            )
+        )
+
+        // Grid lines radiating from vanishing point
+        val vpX = 0.50f
+        val vpY = 0.60f
+        for (x in listOf(0.10f, 0.25f, 0.40f, 0.50f, 0.60f, 0.75f, 0.90f)) {
+            list.add(
+                createPolyStroke(
+                    listOf(DrawingPoint(vpX, vpY), DrawingPoint(x, 0.92f)),
+                    color = cyan,
+                    width = 3.5f
+                )
+            )
+        }
+
+        // Horizontal grid lines in perspective
+        for (y in listOf(0.66f, 0.74f, 0.84f, 0.92f)) {
+            list.add(
+                createPolyStroke(
+                    listOf(DrawingPoint(0.08f, y), DrawingPoint(0.92f, y)),
+                    color = cyan,
+                    width = 3f
+                )
+            )
+        }
+
+        return list
+    }
+
+    private fun generateCyberKatana(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val white = "#FFFFFF"
+
+        // Curved Blade
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.15f, 0.85f), // Tsuka handle
+                    DrawingPoint(0.32f, 0.68f), // Tsuba guard
+                    DrawingPoint(0.55f, 0.42f), // Blade body
+                    DrawingPoint(0.78f, 0.18f), // Kissaki tip
+                    DrawingPoint(0.76f, 0.22f), // Blade spine
+                    DrawingPoint(0.52f, 0.46f),
+                    DrawingPoint(0.32f, 0.68f)
+                ),
+                color = cyan,
+                width = 4.5f
+            )
+        )
+
+        // Energy Core along Blade
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.35f, 0.64f), DrawingPoint(0.74f, 0.22f)),
+                color = white,
+                width = 2.5f
+            )
+        )
+
+        // Tsuba (Guard)
+        list.add(
+            createPolyStroke(
+                listOf(DrawingPoint(0.28f, 0.72f), DrawingPoint(0.36f, 0.64f)),
+                color = pink,
+                width = 6f
+            )
+        )
+
+        // Tsuka (Hilt wraps)
+        val wrapPoints = listOf(
+            DrawingPoint(0.26f, 0.74f) to DrawingPoint(0.30f, 0.70f),
+            DrawingPoint(0.22f, 0.78f) to DrawingPoint(0.26f, 0.74f),
+            DrawingPoint(0.18f, 0.82f) to DrawingPoint(0.22f, 0.78f)
+        )
+        for ((p1, p2) in wrapPoints) {
+            list.add(createPolyStroke(listOf(p1, p2), color = pink, width = 4f))
+        }
+
+        // Energy Slash Trails
+        list.add(
+            createBezierStroke(
+                listOf(
+                    DrawingPoint(0.40f, 0.25f),
+                    DrawingPoint(0.68f, 0.35f),
+                    DrawingPoint(0.85f, 0.55f)
+                ),
+                color = pink,
+                width = 4f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateOniMask(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val pink = "#FF00E5"
+        val yellow = "#FFE600"
+
+        // Mask Outer Contour
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.30f, 0.30f),
+                    DrawingPoint(0.20f, 0.12f), // Left Horn
+                    DrawingPoint(0.35f, 0.22f),
+                    DrawingPoint(0.50f, 0.24f),
+                    DrawingPoint(0.65f, 0.22f),
+                    DrawingPoint(0.80f, 0.12f), // Right Horn
+                    DrawingPoint(0.70f, 0.30f),
+                    DrawingPoint(0.82f, 0.52f),
+                    DrawingPoint(0.65f, 0.82f), // Chin
+                    DrawingPoint(0.35f, 0.82f),
+                    DrawingPoint(0.18f, 0.52f),
+                    DrawingPoint(0.30f, 0.30f)
+                ),
+                color = pink,
+                width = 5f
+            )
+        )
+
+        // Angry Brow & Eyes
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.28f, 0.42f),
+                    DrawingPoint(0.44f, 0.46f),
+                    DrawingPoint(0.36f, 0.50f),
+                    DrawingPoint(0.28f, 0.42f)
+                ),
+                color = cyan,
+                width = 4f
+            )
+        )
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.72f, 0.42f),
+                    DrawingPoint(0.56f, 0.46f),
+                    DrawingPoint(0.64f, 0.50f),
+                    DrawingPoint(0.72f, 0.42f)
+                ),
+                color = cyan,
+                width = 4f
+            )
+        )
+
+        // Broad Oni Nose
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.50f, 0.45f),
+                    DrawingPoint(0.44f, 0.58f),
+                    DrawingPoint(0.56f, 0.58f),
+                    DrawingPoint(0.50f, 0.45f)
+                ),
+                color = yellow,
+                width = 3.5f
+            )
+        )
+
+        // Grinning Mouth & Tusks
+        list.add(
+            createPolyStroke(
+                listOf(
+                    DrawingPoint(0.28f, 0.65f),
+                    DrawingPoint(0.36f, 0.56f), // Upward left tusk
+                    DrawingPoint(0.42f, 0.68f),
+                    DrawingPoint(0.50f, 0.65f),
+                    DrawingPoint(0.58f, 0.68f),
+                    DrawingPoint(0.64f, 0.56f), // Upward right tusk
+                    DrawingPoint(0.72f, 0.65f),
+                    DrawingPoint(0.50f, 0.74f),
+                    DrawingPoint(0.28f, 0.65f)
+                ),
+                color = cyan,
+                width = 4.5f
+            )
+        )
+
+        return list
+    }
+
+    private fun generateDynamicProceduralArt(seedPrompt: String): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val colors = listOf("#00F0FF", "#FF00E5", "#00FF88", "#FFE600", "#9D00FF")
+        val hash = seedPrompt.hashCode()
+
+        // Outer Cyber Poly Shape
+        val points = mutableListOf<DrawingPoint>()
+        val sides = 5 + (kotlin.math.abs(hash) % 4) // 5 to 8 sides
+        val radius = 0.35f
+        for (i in 0..sides) {
+            val angle = (i * 2.0 * Math.PI / sides) - (Math.PI / 2.0)
+            val jitter = 0.05f * sin((i * 3 + hash).toDouble()).toFloat()
+            val r = (radius + jitter).coerceIn(0.2f, 0.45f)
+            points.add(
+                DrawingPoint(
+                    (0.50f + r * cos(angle)).toFloat(),
+                    (0.50f + r * sin(angle)).toFloat()
+                )
+            )
+        }
+        list.add(createPolyStroke(points, color = colors[0], width = 5f))
+
+        // Inner Cyber Ring / Core
+        list.add(
+            createCircleStroke(0.50f, 0.50f, 0.14f, color = colors[1], width = 4f, segments = 24)
+        )
+
+        // Radiating Cross Lines
+        for (k in 0 until 4) {
+            val a = k * (Math.PI / 2.0) + (hash % 10) * 0.1
+            val p1 = DrawingPoint((0.50f + 0.14f * cos(a)).toFloat(), (0.50f + 0.14f * sin(a)).toFloat())
+            val p2 = DrawingPoint((0.50f + 0.40f * cos(a)).toFloat(), (0.50f + 0.40f * sin(a)).toFloat())
+            list.add(createPolyStroke(listOf(p1, p2), color = colors[2 % colors.size], width = 3.5f))
+        }
+
+        // Geometric Center Accent
+        list.add(
+            createStarStroke(0.50f, 0.50f, 0.07f, color = colors[3 % colors.size], width = 3f)
+        )
+
+        // Floating Cyber Sparkles
+        list.add(createStarStroke(0.20f, 0.25f, 0.04f, color = colors[4 % colors.size], width = 2.5f))
+        list.add(createStarStroke(0.80f, 0.75f, 0.04f, color = colors[0], width = 2.5f))
+
+        return list
+    }
+
+    // ==========================================
+    // HELPER STROKE CREATORS
+    // ==========================================
+
+    private fun createPolyStroke(
+        points: List<DrawingPoint>,
+        color: String,
+        width: Float
+    ): DrawingStroke {
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = points,
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.LINE
+        )
+    }
+
+    private fun createBezierStroke(
+        controlPoints: List<DrawingPoint>,
+        color: String,
+        width: Float,
+        subdivisions: Int = 8
+    ): DrawingStroke {
+        if (controlPoints.size < 2) {
+            return createPolyStroke(controlPoints, color, width)
+        }
+
+        val interpolated = mutableListOf<DrawingPoint>()
+        for (i in 0 until controlPoints.size - 1) {
+            val p0 = if (i > 0) controlPoints[i - 1] else controlPoints[i]
+            val p1 = controlPoints[i]
+            val p2 = controlPoints[i + 1]
+            val p3 = if (i + 2 < controlPoints.size) controlPoints[i + 2] else p2
+
+            for (step in 0 until subdivisions) {
+                val t = step.toFloat() / subdivisions
+                val pt = catmullRom(p0, p1, p2, p3, t)
+                interpolated.add(pt)
+            }
+        }
+        interpolated.add(controlPoints.last())
+
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = interpolated,
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.CURVE
+        )
+    }
+
+    private fun catmullRom(p0: DrawingPoint, p1: DrawingPoint, p2: DrawingPoint, p3: DrawingPoint, t: Float): DrawingPoint {
+        val t2 = t * t
+        val t3 = t2 * t
+        val x = 0.5f * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3)
+        val y = 0.5f * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
+        return DrawingPoint(x.coerceIn(0f, 1f), y.coerceIn(0f, 1f))
+    }
+
+    private fun createCircleStroke(
+        cx: Float,
+        cy: Float,
+        radius: Float,
+        color: String,
+        width: Float,
+        segments: Int = 24
+    ): DrawingStroke {
+        val pts = mutableListOf<DrawingPoint>()
+        for (i in 0..segments) {
+            val angle = (i * 2.0 * Math.PI / segments)
+            pts.add(
+                DrawingPoint(
+                    (cx + radius * cos(angle)).toFloat().coerceIn(0f, 1f),
+                    (cy + radius * sin(angle)).toFloat().coerceIn(0f, 1f)
+                )
+            )
+        }
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = pts,
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.CURVE,
+            isClosed = true
+        )
+    }
+
+    private fun createStarStroke(
+        cx: Float,
+        cy: Float,
+        size: Float,
+        color: String,
+        width: Float
+    ): DrawingStroke {
+        val pts = listOf(
+            DrawingPoint(cx, cy - size),
+            DrawingPoint(cx + size * 0.3f, cy - size * 0.3f),
+            DrawingPoint(cx + size, cy),
+            DrawingPoint(cx + size * 0.3f, cy + size * 0.3f),
+            DrawingPoint(cx, cy + size),
+            DrawingPoint(cx - size * 0.3f, cy + size * 0.3f),
+            DrawingPoint(cx - size, cy),
+            DrawingPoint(cx - size * 0.3f, cy - size * 0.3f),
+            DrawingPoint(cx, cy - size)
+        )
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = pts,
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.LINE
+        )
+    }
+}
