@@ -151,7 +151,9 @@ data class DrawingSettings(
     val previewGlowIntensity: Float = 0.8f,
     val showPreviewOverlay: Boolean = true,
     val autoMinimizeOnExecute: Boolean = true,
-    val vibrationFeedback: Boolean = true
+    val vibrationFeedback: Boolean = true,
+    val unrestrictedMode: Boolean = false, // Unrestricted Mode (prompts won't be blocked, great for 2D horror games)
+    val copyrightBypassMode: Boolean = false // Bypass copyright restrictions by veering prompt to clean non-copyright wording
 )
 
 /**

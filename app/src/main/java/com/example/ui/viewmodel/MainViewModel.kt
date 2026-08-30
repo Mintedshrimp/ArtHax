@@ -114,15 +114,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _promptText.value = prompt
 
         viewModelScope.launch {
+            val settings = _drawingSettings.value
             _executionState.value = ExecutionState.Generating(0.3f, "Synthesizing vector paths via $model...")
-            val result = puterBridge.generateDrawingInstructions(prompt, model)
+            val result = puterBridge.generateDrawingInstructions(
+                prompt = prompt,
+                model = model,
+                unrestrictedMode = settings.unrestrictedMode,
+                copyrightBypassMode = settings.copyrightBypassMode
+            )
             _currentInstructionSet.value = result
             _executionState.value = ExecutionState.Ready(result)
 
             val modelName = availableModels.find { it.id == model }?.name ?: model
+            val statusNote = buildString {
+                append("Synthesized ${result.strokes.size} vector stroke paths for '${result.title}'. Ready to draw!")
+                if (settings.unrestrictedMode) {
+                    append(" [Unrestricted Mode Active]")
+                }
+                if (settings.copyrightBypassMode) {
+                    append(" [Copyright-Free Adapted]")
+                }
+            }
             val aiMsg = ChatMessage(
                 sender = ChatSender.ASSISTANT,
-                text = "Synthesized ${result.strokes.size} vector stroke paths for '$prompt'. Ready to draw!",
+                text = statusNote,
                 modelName = modelName,
                 isInstructionGenerated = true,
                 instructionSet = result
@@ -165,8 +180,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun generateStrokes(prompt: String = _promptText.value, model: String = _selectedModel.value) {
         viewModelScope.launch {
+            val settings = _drawingSettings.value
             _executionState.value = ExecutionState.Generating(0.3f, "Synthesizing vector paths via $model...")
-            val result = puterBridge.generateDrawingInstructions(prompt, model)
+            val result = puterBridge.generateDrawingInstructions(
+                prompt = prompt,
+                model = model,
+                unrestrictedMode = settings.unrestrictedMode,
+                copyrightBypassMode = settings.copyrightBypassMode
+            )
             _currentInstructionSet.value = result
             _executionState.value = ExecutionState.Ready(result)
         }

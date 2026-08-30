@@ -29,13 +29,14 @@ import com.example.ai.PuterJsBridge
 import com.example.model.AiModelOption
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.CalibrationBounds
+import com.example.model.ChatMessage
+import com.example.model.ChatSender
 import com.example.model.DrawingSettings
 import com.example.model.ExecutionState
-import com.example.model.SekaiPreset
 import com.example.ui.components.CyberCanvas
 import com.example.ui.components.DraggableCutoutBox
 import com.example.ui.components.FloatingButtonWidget
-import com.example.ui.components.OverlayHudSheet
+import com.example.ui.components.OverlayChatWindow
 import com.example.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,8 +45,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Foreground Overlay Service that provides a non-intrusive floating button
- * to toggle the AI prompt hub and draggable canvas crop box on top of drawing apps.
+ * Foreground Overlay Service that provides a floating bubble to toggle
+ * the AI chat assistant, model selector dropdown, and draggable canvas crop box.
  */
 class ArtHaxOverlayService : Service() {
 
@@ -57,42 +58,41 @@ class ArtHaxOverlayService : Service() {
 
     // Views managed by WindowManager
     private var bubbleView: View? = null
-    private var hudView: View? = null
+    private var chatWindowView: View? = null
     private var previewOverlayView: View? = null
 
     // Layout Params
     private var bubbleParams: WindowManager.LayoutParams? = null
-    private var hudParams: WindowManager.LayoutParams? = null
+    private var chatWindowParams: WindowManager.LayoutParams? = null
     private var previewParams: WindowManager.LayoutParams? = null
 
     // Reactive States
-    private val _isHudExpanded = MutableStateFlow(false)
-    private val _isHudVisible = MutableStateFlow(false)
-    private val _promptText = MutableStateFlow("Chibi Anime Character")
+    private val _isChatExpanded = MutableStateFlow(true)
+    private val _isChatVisible = MutableStateFlow(false)
+    private val _promptText = MutableStateFlow("")
     private val _selectedModel = MutableStateFlow("claude-3-5-sonnet")
     private val _currentInstructionSet = MutableStateFlow<ArtHaxInstructionSet?>(null)
     private val _executionState = MutableStateFlow<ExecutionState>(ExecutionState.Idle)
     private val _drawingSettings = MutableStateFlow(DrawingSettings())
     private val _calibrationBounds = MutableStateFlow(CalibrationBounds())
-    private val _isCalibrationMode = MutableStateFlow(false)
+    private val _isCanvasCropMode = MutableStateFlow(false)
 
-    private val availableModels = listOf(
-        AiModelOption("claude-3-5-sonnet", "Claude 3.5 Sonnet", "Anthropic", "POPULAR", "Optimal for precise vector line paths", true, true),
-        AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Google", "ULTRA FAST", "Ultra low latency drawing instructions", false, true),
-        AiModelOption("deepseek-chat", "DeepSeek Chat", "DeepSeek", "BALANCED", "Structured coordinate optimization", false, true),
-        AiModelOption("gpt-4o", "GPT-4o Drawing", "OpenAI", "HD VECTORS", "High detail complex anime & cyber art", false, true),
-        AiModelOption("puter-art-v1", "Puter Art Matrix", "Puter", "OFFLINE READY", "Native Puter.js drawing synthesis", false, true)
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(
+        listOf(
+            ChatMessage(
+                sender = ChatSender.ASSISTANT,
+                text = "Hello! I am your AI Drawing Assistant. Tap 'Canvas' top-right to crop your paint area, then ask me what to draw!",
+                modelName = "Claude 3.5 Sonnet"
+            )
+        )
     )
 
-    private val samplePresets = listOf(
-        SekaiPreset("p1", "Chibi Miku", "Anime", "Sekai Chibi Hatsune Miku with twintails", "🎤", 18, "#3B82F6"),
-        SekaiPreset("p2", "Cyber Skull", "Futuristic", "Futuristic cyberpunk skull with glowing optics", "💀", 16, "#EC4899"),
-        SekaiPreset("p3", "Neon Neko", "Mascot", "Cyberpunk neon cat with robotic whiskers", "🐱", 14, "#10B981"),
-        SekaiPreset("p4", "Neon Dragon", "Fantasy", "Serpentine neon dragon with horns", "🐉", 20, "#3B82F6"),
-        SekaiPreset("p5", "Sakura", "Nature", "Detailed sakura blossom flower with petals", "🌸", 15, "#EC4899"),
-        SekaiPreset("p6", "Retro Wave", "Synthwave", "Retro synthwave sunset with horizon grid", "🌅", 22, "#F59E0B"),
-        SekaiPreset("p7", "Cyber Katana", "Weapons", "Glowing cyber samurai katana blade", "⚔️", 12, "#3B82F6"),
-        SekaiPreset("p8", "Oni Mask", "Traditional", "Japanese cyber oni demon mask", "👹", 17, "#EC4899")
+    private val availableModels = listOf(
+        AiModelOption("claude-3-5-sonnet", "Claude 3.5 Sonnet", "Anthropic", "FREE", "Optimal for precise vector line paths", true, true),
+        AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Google", "FREE", "Ultra low latency drawing instructions", false, true),
+        AiModelOption("deepseek-chat", "DeepSeek Chat", "DeepSeek", "FREE", "Crisp coordinate accuracy and smoothing", false, true),
+        AiModelOption("gpt-4o", "GPT-4o Drawing", "OpenAI", "AUTH", "High detail complex anime & cyber art", false, false),
+        AiModelOption("puter-art-v1", "Puter Art Matrix", "Puter", "FREE", "Native procedural vector drawing engine", false, true)
     )
 
     override fun onCreate() {
@@ -104,7 +104,7 @@ class ArtHaxOverlayService : Service() {
 
         startForegroundServiceNotification()
         setupFloatingBubble()
-        setupHudSheet()
+        setupChatWindow()
         setupPreviewOverlay()
     }
 
@@ -124,7 +124,7 @@ class ArtHaxOverlayService : Service() {
         currentService = null
         overlayLifecycleOwner.onDestroy()
         removeViewSafely(bubbleView)
-        removeViewSafely(hudView)
+        removeViewSafely(chatWindowView)
         removeViewSafely(previewOverlayView)
     }
 
@@ -162,7 +162,7 @@ class ArtHaxOverlayService : Service() {
 
         val notification: Notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Art Assistant Active")
-            .setContentText("Tap the floating bubble to open AI prompt & crop tools.")
+            .setContentText("Tap the floating bubble to chat with AI and crop paint canvas.")
             .setSmallIcon(android.R.drawable.ic_menu_edit)
             .setContentIntent(pendingOpen)
             .setOngoing(true)
@@ -198,7 +198,7 @@ class ArtHaxOverlayService : Service() {
 
         val view = createOverlayComposeView(this, overlayLifecycleOwner) {
             val execState by _executionState.collectAsState()
-            val isVisible by _isHudVisible.collectAsState()
+            val isVisible by _isChatVisible.collectAsState()
 
             MyApplicationTheme {
                 FloatingButtonWidget(
@@ -208,14 +208,13 @@ class ArtHaxOverlayService : Service() {
                         if (execState is ExecutionState.Drawing) {
                             abortDrawing()
                         } else {
-                            toggleHudVisibility()
+                            toggleChatVisibility()
                         }
                     }
                 )
             }
         }
 
-        // Touch listener for smooth dragging
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -259,10 +258,10 @@ class ArtHaxOverlayService : Service() {
     }
 
     // ==========================================
-    // EXPANDABLE HUD SHEET
+    // FLOATING CHAT WINDOW & MODEL DROPDOWN
     // ==========================================
 
-    private fun setupHudSheet() {
+    private fun setupChatWindow() {
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
@@ -270,7 +269,7 @@ class ArtHaxOverlayService : Service() {
             WindowManager.LayoutParams.TYPE_PHONE
         }
 
-        hudParams = WindowManager.LayoutParams(
+        chatWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
@@ -282,90 +281,83 @@ class ArtHaxOverlayService : Service() {
         }
 
         val view = createOverlayComposeView(this, overlayLifecycleOwner) {
-            val isVisible by _isHudVisible.collectAsState()
-            val isExpanded by _isHudExpanded.collectAsState()
+            val isVisible by _isChatVisible.collectAsState()
+            val isExpanded by _isChatExpanded.collectAsState()
             val prompt by _promptText.collectAsState()
             val model by _selectedModel.collectAsState()
             val instructionSet by _currentInstructionSet.collectAsState()
             val execState by _executionState.collectAsState()
-            val settings by _drawingSettings.collectAsState()
-            val isCalibrationMode by _isCalibrationMode.collectAsState()
+            val messages by _chatMessages.collectAsState()
+            val isCanvasCrop by _isCanvasCropMode.collectAsState()
             val isPuterReady by puterJsBridge.isSdkReady.collectAsState()
             val puterAuth by puterJsBridge.authState.collectAsState()
+            val settings by _drawingSettings.collectAsState()
 
             if (isVisible) {
                 MyApplicationTheme {
-                    OverlayHudSheet(
+                    OverlayChatWindow(
                         isExpanded = isExpanded,
-                        prompt = prompt,
+                        onToggleExpand = { _isChatExpanded.value = !_isChatExpanded.value },
+                        onClose = { setChatVisible(false) },
+                        messages = messages,
+                        currentPrompt = prompt,
                         onPromptChange = { _promptText.value = it },
-                        selectedModel = model,
-                        onModelSelect = { _selectedModel.value = it },
+                        onSendPrompt = { sendPromptFromOverlay(it) },
                         availableModels = availableModels,
-                        presets = samplePresets,
-                        onSelectPreset = { preset ->
-                            _promptText.value = preset.prompt
-                            generateStrokes(preset.prompt, model)
-                        },
+                        selectedModelId = model,
+                        onSelectModel = { _selectedModel.value = it },
                         instructionSet = instructionSet,
                         executionState = execState,
-                        settings = settings,
-                        onUpdateSettings = { _drawingSettings.value = it },
-                        onGenerate = { generateStrokes(prompt, model) },
                         onExecuteDraw = { executeDrawing() },
                         onAbortDraw = { abortDrawing() },
-                        onToggleExpand = { _isHudExpanded.value = !_isHudExpanded.value },
-                        onCloseOverlay = { setHudVisible(false) },
-                        onToggleCalibrationMode = {
-                            toggleCalibrationMode()
-                        },
-                        isCalibrationMode = isCalibrationMode,
+                        onToggleCanvasCrop = { toggleCanvasCropMode() },
+                        isCanvasCropActive = isCanvasCrop,
                         isPuterSdkReady = isPuterReady,
-                        puterAuthState = puterAuth
+                        puterAuthState = puterAuth,
+                        drawingSettings = settings
                     )
                 }
             }
         }
 
-        // Outside touch listener to close HUD when tapping elsewhere
         view.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_OUTSIDE && _isHudVisible.value) {
-                setHudVisible(false)
+            if (event.action == MotionEvent.ACTION_OUTSIDE && _isChatVisible.value) {
+                setChatVisible(false)
                 true
             } else {
                 false
             }
         }
 
-        hudView = view
+        chatWindowView = view
         view.visibility = View.GONE
-        windowManager.addView(view, hudParams)
+        windowManager.addView(view, chatWindowParams)
     }
 
-    private fun setHudVisible(visible: Boolean) {
-        _isHudVisible.value = visible
-        val hView = hudView ?: return
-        val hParams = hudParams ?: return
+    private fun setChatVisible(visible: Boolean) {
+        _isChatVisible.value = visible
+        val cView = chatWindowView ?: return
+        val cParams = chatWindowParams ?: return
 
         if (visible) {
-            hView.visibility = View.VISIBLE
-            hParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            cView.visibility = View.VISIBLE
+            cParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
         } else {
-            hView.visibility = View.GONE
-            hParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+            cView.visibility = View.GONE
+            cParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         }
 
         try {
-            windowManager.updateViewLayout(hView, hParams)
+            windowManager.updateViewLayout(cView, cParams)
         } catch (e: Exception) {
-            // Updated
+            // Layout updated
         }
     }
 
-    private fun toggleHudVisibility() {
-        setHudVisible(!_isHudVisible.value)
+    private fun toggleChatVisibility() {
+        setChatVisible(!_isChatVisible.value)
     }
 
     // ==========================================
@@ -394,26 +386,24 @@ class ArtHaxOverlayService : Service() {
             val instructionSet by _currentInstructionSet.collectAsState()
             val execState by _executionState.collectAsState()
             val bounds by _calibrationBounds.collectAsState()
-            val isCalibrating by _isCalibrationMode.collectAsState()
+            val isCanvasCrop by _isCanvasCropMode.collectAsState()
 
             MyApplicationTheme {
-                if (isCalibrating) {
-                    // Interactive Cutout Box allows freely dragging and resizing canvas over target app
+                if (isCanvasCrop) {
                     DraggableCutoutBox(
                         bounds = bounds,
                         onBoundsChange = { _calibrationBounds.value = it },
                         onConfirmAndDraw = {
-                            setCalibrationMode(false)
+                            setCanvasCropMode(false)
                             executeDrawing()
                         },
                         onClose = {
-                            setCalibrationMode(false)
+                            setCanvasCropMode(false)
                         },
                         instructionSet = instructionSet,
                         executionState = execState
                     )
                 } else if (execState is ExecutionState.Drawing) {
-                    // Pure transparent vector stroke drawing layer (touch passthrough)
                     Box(modifier = Modifier.fillMaxSize().background(Color.Transparent)) {
                         CyberCanvas(
                             instructionSet = instructionSet,
@@ -433,23 +423,21 @@ class ArtHaxOverlayService : Service() {
         windowManager.addView(view, previewParams)
     }
 
-    fun toggleCalibrationMode() {
-        setCalibrationMode(!_isCalibrationMode.value)
+    fun toggleCanvasCropMode() {
+        setCanvasCropMode(!_isCanvasCropMode.value)
     }
 
-    fun setCalibrationMode(enabled: Boolean) {
-        _isCalibrationMode.value = enabled
+    fun setCanvasCropMode(enabled: Boolean) {
+        _isCanvasCropMode.value = enabled
         val pView = previewOverlayView ?: return
         val pParams = previewParams ?: return
 
         if (enabled) {
-            // Make touchable so user can drag the cutout box
             pView.visibility = View.VISIBLE
             pParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-            setHudVisible(false) // Minimize HUD when dragging cutout
+            setChatVisible(false) // Hide chat window when positioning canvas
         } else {
-            // If drawing is not active, hide preview completely
             val isDrawing = _executionState.value is ExecutionState.Drawing
             if (isDrawing) {
                 pView.visibility = View.VISIBLE
@@ -465,20 +453,55 @@ class ArtHaxOverlayService : Service() {
         try {
             windowManager.updateViewLayout(pView, pParams)
         } catch (e: Exception) {
-            // View layout updated
+            // Updated
         }
     }
 
     // ==========================================
-    // ACTIONS & EXECUTION
+    // ACTIONS & AI GENERATION
     // ==========================================
 
-    fun generateStrokes(prompt: String, model: String) {
+    fun sendPromptFromOverlay(prompt: String) {
+        if (prompt.isBlank()) return
+        val model = _selectedModel.value
+        val userMsg = ChatMessage(sender = ChatSender.USER, text = prompt)
+        val currentList = _chatMessages.value.toMutableList()
+        currentList.add(userMsg)
+        _chatMessages.value = currentList
+        _promptText.value = ""
+
         serviceScope.launch {
-            _executionState.value = ExecutionState.Generating(0.2f, "Connecting to Puter.js AI...")
-            val result = puterJsBridge.generateDrawingInstructions(prompt, model)
+            val settings = _drawingSettings.value
+            _executionState.value = ExecutionState.Generating(0.3f, "Synthesizing vector paths via $model...")
+            val result = puterJsBridge.generateDrawingInstructions(
+                prompt = prompt,
+                model = model,
+                unrestrictedMode = settings.unrestrictedMode,
+                copyrightBypassMode = settings.copyrightBypassMode
+            )
             _currentInstructionSet.value = result
             _executionState.value = ExecutionState.Ready(result)
+
+            val modelName = availableModels.find { it.id == model }?.name ?: model
+            val statusNote = buildString {
+                append("Generated ${result.strokes.size} vector strokes for '${result.title}'. Ready to draw in canvas!")
+                if (settings.unrestrictedMode) {
+                    append(" [Unrestricted]")
+                }
+                if (settings.copyrightBypassMode) {
+                    append(" [Copyright Cleaner]")
+                }
+            }
+            val aiMsg = ChatMessage(
+                sender = ChatSender.ASSISTANT,
+                text = statusNote,
+                modelName = modelName,
+                isInstructionGenerated = true,
+                instructionSet = result
+            )
+            val updatedList = _chatMessages.value.toMutableList()
+            updatedList.add(aiMsg)
+            _chatMessages.value = updatedList
         }
     }
 
@@ -487,7 +510,7 @@ class ArtHaxOverlayService : Service() {
         val accessibility = ArtHaxAccessibilityService.instance
 
         if (accessibility == null) {
-            _executionState.value = ExecutionState.Error("Accessibility Service is not enabled. Open app to enable.")
+            _executionState.value = ExecutionState.Error("Accessibility Service is not enabled. Open main app to enable.")
             return
         }
 
@@ -496,10 +519,9 @@ class ArtHaxOverlayService : Service() {
         windowManager.defaultDisplay.getRealMetrics(metrics)
 
         if (_drawingSettings.value.autoMinimizeOnExecute) {
-            setHudVisible(false)
+            setChatVisible(false)
         }
 
-        // Show transparent stroke preview during drawing
         previewOverlayView?.visibility = View.VISIBLE
         previewParams?.let { p ->
             p.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -515,7 +537,7 @@ class ArtHaxOverlayService : Service() {
             onStateUpdate = { state ->
                 _executionState.value = state
                 if (state is ExecutionState.Completed || state is ExecutionState.Idle || state is ExecutionState.Error) {
-                    if (!_isCalibrationMode.value) {
+                    if (!_isCanvasCropMode.value) {
                         previewOverlayView?.visibility = View.GONE
                     }
                 }
@@ -526,7 +548,7 @@ class ArtHaxOverlayService : Service() {
     fun abortDrawing() {
         ArtHaxAccessibilityService.instance?.abortCurrentDrawing()
         _executionState.value = ExecutionState.Idle
-        if (!_isCalibrationMode.value) {
+        if (!_isCanvasCropMode.value) {
             previewOverlayView?.visibility = View.GONE
         }
     }

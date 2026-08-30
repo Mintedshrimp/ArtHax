@@ -123,6 +123,15 @@ object StrokeSynthesisEngine {
             lower.contains("mask") || lower.contains("samurai") || lower.contains("oni") -> {
                 generateOniMask()
             }
+            lower.contains("horror") || lower.contains("creepy") || lower.contains("eyeball") || lower.contains("eye") -> {
+                generateHorrorEyeball()
+            }
+            lower.contains("zombie") || lower.contains("undead") || lower.contains("monster") || lower.contains("ghoul") -> {
+                generateZombieHand()
+            }
+            lower.contains("ghost") || lower.contains("spooky") || lower.contains("phantom") || lower.contains("spirit") -> {
+                generateHorrorGhost()
+            }
             else -> {
                 generateDynamicProceduralArt(prompt)
             }
@@ -1278,6 +1287,137 @@ object StrokeSynthesisEngine {
             strokeType = StrokeType.CURVE,
             isClosed = true
         )
+    }
+
+    private fun createEllipseStroke(
+        cx: Float,
+        cy: Float,
+        rx: Float,
+        ry: Float,
+        color: String,
+        width: Float,
+        segments: Int = 24
+    ): DrawingStroke {
+        val pts = mutableListOf<DrawingPoint>()
+        for (i in 0..segments) {
+            val angle = (i * 2.0 * Math.PI / segments)
+            pts.add(
+                DrawingPoint(
+                    (cx + rx * cos(angle)).toFloat().coerceIn(0f, 1f),
+                    (cy + ry * sin(angle)).toFloat().coerceIn(0f, 1f)
+                )
+            )
+        }
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = pts,
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.CURVE,
+            isClosed = true
+        )
+    }
+
+    private fun createLineStroke(
+        p1: DrawingPoint,
+        p2: DrawingPoint,
+        color: String,
+        width: Float
+    ): DrawingStroke {
+        return DrawingStroke(
+            id = UUID.randomUUID().toString(),
+            points = listOf(p1, p2),
+            colorHex = color,
+            strokeWidth = width,
+            strokeType = StrokeType.LINE
+        )
+    }
+
+    private fun generateHorrorEyeball(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val red = "#FF0033"
+        val neonPink = "#FF00E5"
+        val white = "#FFFFFF"
+        val yellow = "#FFE600"
+
+        // Outer sclera
+        list.add(createEllipseStroke(0.5f, 0.5f, 0.32f, 0.24f, white, 6f))
+        
+        // Iris and pupil
+        list.add(createEllipseStroke(0.5f, 0.5f, 0.14f, 0.14f, red, 5f))
+        list.add(createEllipseStroke(0.5f, 0.5f, 0.06f, 0.06f, yellow, 4f))
+        list.add(createCircleStroke(0.48f, 0.47f, 0.02f, white, 2f))
+
+        // Creepy Blood Veins branching out
+        list.add(createBezierStroke(listOf(DrawingPoint(0.20f, 0.5f), DrawingPoint(0.28f, 0.48f), DrawingPoint(0.36f, 0.52f)), red, 3f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.25f, 0.49f), DrawingPoint(0.30f, 0.42f), DrawingPoint(0.38f, 0.46f)), red, 2.5f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.80f, 0.5f), DrawingPoint(0.72f, 0.52f), DrawingPoint(0.64f, 0.48f)), red, 3f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.75f, 0.51f), DrawingPoint(0.70f, 0.58f), DrawingPoint(0.62f, 0.54f)), red, 2.5f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.5f, 0.28f), DrawingPoint(0.48f, 0.34f), DrawingPoint(0.52f, 0.38f)), neonPink, 2.5f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.5f, 0.72f), DrawingPoint(0.52f, 0.66f), DrawingPoint(0.48f, 0.62f)), neonPink, 2.5f))
+        return list
+    }
+
+    private fun generateZombieHand(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val green = "#00FF88"
+        val darkGreen = "#00AA55"
+        val red = "#FF0033"
+
+        // Ground / Dirt mound
+        list.add(createBezierStroke(listOf(DrawingPoint(0.15f, 0.88f), DrawingPoint(0.5f, 0.80f), DrawingPoint(0.85f, 0.88f)), "#888888", 5f))
+        
+        // Forearm rising
+        list.add(createBezierStroke(listOf(DrawingPoint(0.44f, 0.85f), DrawingPoint(0.45f, 0.65f), DrawingPoint(0.44f, 0.50f)), green, 6f))
+        list.add(createBezierStroke(listOf(DrawingPoint(0.56f, 0.85f), DrawingPoint(0.55f, 0.65f), DrawingPoint(0.54f, 0.50f)), green, 6f))
+
+        // Palm and Fingers with jagged claws
+        list.add(createBezierStroke(listOf(DrawingPoint(0.44f, 0.50f), DrawingPoint(0.38f, 0.38f), DrawingPoint(0.35f, 0.25f), DrawingPoint(0.38f, 0.24f)), darkGreen, 4.5f)) // Pinky
+        list.add(createBezierStroke(listOf(DrawingPoint(0.46f, 0.48f), DrawingPoint(0.42f, 0.30f), DrawingPoint(0.44f, 0.18f), DrawingPoint(0.47f, 0.18f)), green, 4.5f)) // Ring
+        list.add(createBezierStroke(listOf(DrawingPoint(0.49f, 0.48f), DrawingPoint(0.50f, 0.28f), DrawingPoint(0.52f, 0.15f), DrawingPoint(0.55f, 0.16f)), green, 5f)) // Middle
+        list.add(createBezierStroke(listOf(DrawingPoint(0.52f, 0.48f), DrawingPoint(0.58f, 0.32f), DrawingPoint(0.62f, 0.20f), DrawingPoint(0.65f, 0.22f)), green, 4.5f)) // Index
+        list.add(createBezierStroke(listOf(DrawingPoint(0.55f, 0.55f), DrawingPoint(0.68f, 0.48f), DrawingPoint(0.72f, 0.40f), DrawingPoint(0.70f, 0.38f)), darkGreen, 4.5f)) // Thumb
+
+        // Bloody claw tips and stitches
+        list.add(createLineStroke(DrawingPoint(0.35f, 0.25f), DrawingPoint(0.38f, 0.24f), red, 4f))
+        list.add(createLineStroke(DrawingPoint(0.44f, 0.18f), DrawingPoint(0.47f, 0.18f), red, 4f))
+        list.add(createLineStroke(DrawingPoint(0.52f, 0.15f), DrawingPoint(0.55f, 0.16f), red, 4f))
+        list.add(createLineStroke(DrawingPoint(0.62f, 0.20f), DrawingPoint(0.65f, 0.22f), red, 4f))
+        return list
+    }
+
+    private fun generateHorrorGhost(): List<DrawingStroke> {
+        val list = mutableListOf<DrawingStroke>()
+        val cyan = "#00F0FF"
+        val white = "#FFFFFF"
+        val dark = "#000000"
+
+        // Spectral shroud outline
+        val shroudPts = listOf(
+            DrawingPoint(0.50f, 0.18f),
+            DrawingPoint(0.65f, 0.22f),
+            DrawingPoint(0.72f, 0.38f),
+            DrawingPoint(0.75f, 0.58f),
+            DrawingPoint(0.80f, 0.78f),
+            DrawingPoint(0.68f, 0.72f),
+            DrawingPoint(0.60f, 0.82f),
+            DrawingPoint(0.50f, 0.72f),
+            DrawingPoint(0.40f, 0.82f),
+            DrawingPoint(0.32f, 0.72f),
+            DrawingPoint(0.20f, 0.78f),
+            DrawingPoint(0.25f, 0.58f),
+            DrawingPoint(0.28f, 0.38f),
+            DrawingPoint(0.35f, 0.22f),
+            DrawingPoint(0.50f, 0.18f)
+        )
+        list.add(createBezierStroke(shroudPts, cyan, 5f))
+
+        // Hollow Glowing Eyes & Screaming Mouth
+        list.add(createEllipseStroke(0.40f, 0.38f, 0.05f, 0.08f, white, 4f))
+        list.add(createEllipseStroke(0.60f, 0.38f, 0.05f, 0.08f, white, 4f))
+        list.add(createEllipseStroke(0.50f, 0.54f, 0.06f, 0.10f, white, 4.5f))
+        list.add(createEllipseStroke(0.50f, 0.54f, 0.03f, 0.06f, cyan, 3f))
+        return list
     }
 
     private fun createStarStroke(
