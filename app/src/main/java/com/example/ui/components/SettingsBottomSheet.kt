@@ -310,7 +310,7 @@ fun SettingsBottomSheet(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
                                 text = "Auto-minimize during draw",
                                 color = TextWhite,
@@ -332,6 +332,58 @@ fun SettingsBottomSheet(
                                 checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
                             ),
                             modifier = Modifier.testTag("settings_auto_minimize_switch")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Edge Hugging toggle for draggable floating bubble
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Floating Bubble Edge Hugging",
+                                    color = if (settings.edgeHugging) NeonCyan else TextWhite,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = NeonCyan.copy(alpha = 0.15f)
+                                ) {
+                                    Text(
+                                        text = "Smart Snap",
+                                        color = NeonCyan,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "When released, the floating bubble smoothly snaps to the closest screen edge and stays there until moved.",
+                                color = TextMuted,
+                                fontSize = 11.sp,
+                                lineHeight = 15.sp
+                            )
+                        }
+
+                        Switch(
+                            checked = settings.edgeHugging,
+                            onCheckedChange = { onUpdateSettings(settings.copy(edgeHugging = it)) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = NeonCyan,
+                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                            ),
+                            modifier = Modifier.testTag("settings_edge_hugging_switch")
                         )
                     }
                 }

@@ -168,6 +168,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateSettings(settings: DrawingSettings) {
         _drawingSettings.value = settings
+        ArtHaxOverlayService.updateSettings(settings)
     }
 
     fun setCalibrationBounds(bounds: CalibrationBounds) {

@@ -153,7 +153,8 @@ data class DrawingSettings(
     val autoMinimizeOnExecute: Boolean = true,
     val vibrationFeedback: Boolean = true,
     val unrestrictedMode: Boolean = false, // Unrestricted Mode (prompts won't be blocked, great for 2D horror games)
-    val copyrightBypassMode: Boolean = false // Bypass copyright restrictions by veering prompt to clean non-copyright wording
+    val copyrightBypassMode: Boolean = false, // Bypass copyright restrictions by veering prompt to clean non-copyright wording
+    val edgeHugging: Boolean = true // Snap floating bubble to closest screen edge when released
 )
 
 /**

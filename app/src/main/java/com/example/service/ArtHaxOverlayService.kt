@@ -220,11 +220,19 @@ class ArtHaxOverlayService : Service() {
         var initialTouchX = 0f
         var initialTouchY = 0f
         var isDragging = false
+        var snapAnimator: android.animation.ValueAnimator? = null
 
         view.setOnTouchListener { _, event ->
             val params = bubbleParams ?: return@setOnTouchListener false
+            val displayMetrics = resources.displayMetrics
+            val screenWidth = displayMetrics.widthPixels
+            val screenHeight = displayMetrics.heightPixels
+            val bubbleW = view.width.takeIf { it > 0 } ?: (56 * displayMetrics.density).toInt()
+            val bubbleH = view.height.takeIf { it > 0 } ?: (56 * displayMetrics.density).toInt()
+
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    snapAnimator?.cancel()
                     initialX = params.x
                     initialY = params.y
                     initialTouchX = event.rawX
@@ -235,17 +243,43 @@ class ArtHaxOverlayService : Service() {
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
-                    if (kotlin.math.abs(dx) > 10 || kotlin.math.abs(dy) > 10) {
+                    if (kotlin.math.abs(dx) > 8 || kotlin.math.abs(dy) > 8) {
                         isDragging = true
-                        params.x = initialX + dx
-                        params.y = initialY + dy
-                        windowManager.updateViewLayout(view, params)
+                        val newX = (initialX + dx).coerceIn(0, (screenWidth - bubbleW).coerceAtLeast(0))
+                        val newY = (initialY + dy).coerceIn(40, (screenHeight - bubbleH - 40).coerceAtLeast(40))
+                        params.x = newX
+                        params.y = newY
+                        try {
+                            windowManager.updateViewLayout(view, params)
+                        } catch (e: Exception) {}
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
                     if (!isDragging) {
                         view.performClick()
+                    } else {
+                        val settings = _drawingSettings.value
+                        if (settings.edgeHugging) {
+                            val currentCenterX = params.x + (bubbleW / 2)
+                            val targetX = if (currentCenterX < screenWidth / 2) {
+                                20 // Hug left edge
+                            } else {
+                                (screenWidth - bubbleW - 20).coerceAtLeast(0) // Hug right edge
+                            }
+
+                            snapAnimator = android.animation.ValueAnimator.ofInt(params.x, targetX).apply {
+                                duration = 220L
+                                interpolator = android.view.animation.DecelerateInterpolator()
+                                addUpdateListener { anim ->
+                                    params.x = anim.animatedValue as Int
+                                    try {
+                                        windowManager.updateViewLayout(view, params)
+                                    } catch (e: Exception) {}
+                                }
+                                start()
+                            }
+                        }
                     }
                     true
                 }
@@ -559,6 +593,10 @@ class ArtHaxOverlayService : Service() {
 
         private var currentService: ArtHaxOverlayService? = null
         fun isRunning(): Boolean = currentService != null
+
+        fun updateSettings(settings: DrawingSettings) {
+            currentService?._drawingSettings?.value = settings
+        }
 
         fun start(context: Context) {
             val intent = Intent(context, ArtHaxOverlayService::class.java).apply {
