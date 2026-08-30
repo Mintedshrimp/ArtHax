@@ -52,13 +52,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedModel = MutableStateFlow("claude-3-5-sonnet")
     val selectedModel: StateFlow<String> = _selectedModel.asStateFlow()
 
-    val availableModels = listOf(
-        AiModelOption("claude-3-5-sonnet", "Claude 3.5 Sonnet", "Anthropic", "FREE TIER", "Ultra-precise vector path geometry for anime", isRecommended = true, isFree = true),
-        AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Google", "FREE TIER", "Sub-second stroke compilation latency", isRecommended = false, isFree = true),
-        AiModelOption("deepseek-chat", "DeepSeek Chat", "DeepSeek", "FREE TIER", "Crisp coordinate accuracy and smoothing", isRecommended = false, isFree = true),
-        AiModelOption("gpt-4o", "GPT-4o Drawing", "OpenAI", "AUTH UNLOCKED", "Rich detail and complex multi-color strokes", isRecommended = false, isFree = false),
-        AiModelOption("puter-art-v1", "Puter Art Matrix", "Puter.js", "OFFLINE FREE", "Native procedural vector drawing engine", isRecommended = false, isFree = true)
-    )
+    val availableModels: StateFlow<List<AiModelOption>> = puterBridge.availableModels
+    val isFetchingModels: StateFlow<Boolean> = puterBridge.isFetchingModels
 
     val presets = listOf(
         SekaiPreset("p1", "Chibi Miku", "Sekai Anime", "Sekai Chibi Hatsune Miku with twintails and microphone", "🎤", 18, "#00F0FF"),
@@ -125,7 +120,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _currentInstructionSet.value = result
             _executionState.value = ExecutionState.Ready(result)
 
-            val modelName = availableModels.find { it.id == model }?.name ?: model
+            val modelName = availableModels.value.find { it.id == model }?.name ?: model
             val statusNote = buildString {
                 append("Synthesized ${result.strokes.size} vector stroke paths for '${result.title}'. Ready to draw!")
                 if (settings.unrestrictedMode) {
@@ -284,6 +279,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loginToPuter() {
         puterBridge.triggerSignIn()
+    }
+
+    fun handleLoginSuccess(username: String, email: String?) {
+        puterBridge.setLoggedInUser(username, email)
+    }
+
+    fun refreshLiveModels() {
+        puterBridge.fetchLiveModels()
     }
 
     fun logoutFromPuter() {

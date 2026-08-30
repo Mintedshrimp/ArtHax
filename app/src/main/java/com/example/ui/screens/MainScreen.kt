@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.PuterAuthState
 import com.example.ui.components.PuterAuthSheet
+import com.example.ui.components.PuterLoginDialog
 import com.example.ui.components.SettingsBottomSheet
 import com.example.ui.theme.BorderGlass
 import com.example.ui.theme.CardBackground
@@ -102,6 +103,7 @@ import com.example.ui.viewmodel.PuterAuthViewModel
 fun MainScreen(
     viewModel: MainViewModel,
     puterAuthViewModel: PuterAuthViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    initialShowLoginDialog: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val overlayGranted by viewModel.isOverlayPermissionGranted.collectAsState()
@@ -113,6 +115,7 @@ fun MainScreen(
 
     var showSettingsSheet by remember { mutableStateOf(false) }
     var showPuterAuthSheet by remember { mutableStateOf(false) }
+    var showPuterLoginDialog by remember { mutableStateOf(initialShowLoginDialog) }
 
     val allPermissionsReady = overlayGranted && accessibilityEnabled
 
@@ -550,7 +553,7 @@ fun MainScreen(
                         }
                     } else {
                         OutlinedButton(
-                            onClick = { showPuterAuthSheet = true },
+                            onClick = { showPuterLoginDialog = true },
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonCyan),
                             border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.5f)),
@@ -622,7 +625,7 @@ fun MainScreen(
                 puterAuthState = puterAuthState,
                 onLoginClick = {
                     showSettingsSheet = false
-                    showPuterAuthSheet = true
+                    showPuterLoginDialog = true
                 },
                 onLogoutClick = {
                     viewModel.logoutFromPuter()
@@ -631,6 +634,18 @@ fun MainScreen(
                 onUpdateSettings = { viewModel.updateSettings(it) }
             )
         }
+
+        // ==========================================
+        // MINIMALIST PUTER LOGIN WEBVIEW DIALOG
+        // ==========================================
+        PuterLoginDialog(
+            isOpen = showPuterLoginDialog,
+            onDismiss = { showPuterLoginDialog = false },
+            onLoginSuccess = { username, email ->
+                viewModel.handleLoginSuccess(username, email)
+                showPuterLoginDialog = false
+            }
+        )
 
         // ==========================================
         // PUTER AUTH SHEET

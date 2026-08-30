@@ -1,5 +1,5 @@
 {
-  "name": "Art Assistant",
+  "name": "ArtHax",
   "description": "AI-powered floating overlay and vector drawing assistant for digital art and canvas apps with gesture automation.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

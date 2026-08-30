@@ -325,6 +325,7 @@ class ArtHaxOverlayService : Service() {
             val isCanvasCrop by _isCanvasCropMode.collectAsState()
             val isPuterReady by puterJsBridge.isSdkReady.collectAsState()
             val puterAuth by puterJsBridge.authState.collectAsState()
+            val liveModels by puterJsBridge.availableModels.collectAsState()
             val settings by _drawingSettings.collectAsState()
 
             if (isVisible) {
@@ -337,7 +338,7 @@ class ArtHaxOverlayService : Service() {
                         currentPrompt = prompt,
                         onPromptChange = { _promptText.value = it },
                         onSendPrompt = { sendPromptFromOverlay(it) },
-                        availableModels = availableModels,
+                        availableModels = liveModels,
                         selectedModelId = model,
                         onSelectModel = { _selectedModel.value = it },
                         instructionSet = instructionSet,
@@ -348,7 +349,17 @@ class ArtHaxOverlayService : Service() {
                         isCanvasCropActive = isCanvasCrop,
                         isPuterSdkReady = isPuterReady,
                         puterAuthState = puterAuth,
-                        drawingSettings = settings
+                        drawingSettings = settings,
+                        onSignInClick = {
+                            val openIntent = Intent(this@ArtHaxOverlayService, MainActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                putExtra("open_login_dialog", true)
+                            }
+                            startActivity(openIntent)
+                        },
+                        onRefreshModels = {
+                            puterJsBridge.fetchLiveModels()
+                        }
                     )
                 }
             }

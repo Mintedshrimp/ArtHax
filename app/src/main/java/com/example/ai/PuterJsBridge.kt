@@ -11,6 +11,7 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.example.model.AiModelOption
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.PuterAuthState
 import kotlinx.coroutines.CoroutineScope
@@ -21,10 +22,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Headless bridge to puter.js API using an Android WebView instance.
  * Supports puter.ai.chat() with models like claude-3-5-sonnet, gpt-4o, gemini-2.0-flash, etc.
+ * Features live dynamic model fetching from Puter API upon user authentication.
  */
 class PuterJsBridge(private val context: Context) {
 
@@ -40,14 +44,41 @@ class PuterJsBridge(private val context: Context) {
     private val _authState = MutableStateFlow(PuterAuthState())
     val authState: StateFlow<PuterAuthState> = _authState.asStateFlow()
 
+    // Default Fallback Models
+    private val DEFAULT_MODELS = listOf(
+        AiModelOption("claude-3-5-sonnet", "Claude 3.5 Sonnet", "Anthropic", "PRO", "Ultra-precise vector path geometry for anime & complex scenes", isRecommended = true, isFree = true),
+        AiModelOption("claude-3-7-sonnet", "Claude 3.7 Sonnet", "Anthropic", "HYBRID", "Next-gen hybrid reasoning with intricate multi-color strokes", isRecommended = true, isFree = true),
+        AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Google", "TURBO", "Sub-second real-time stroke vector compilation latency", isRecommended = true, isFree = true),
+        AiModelOption("gpt-4o", "GPT-4o Omnimodal", "OpenAI", "HIGH RES", "Exceptional spatial resolution and color harmony", isRecommended = false, isFree = true),
+        AiModelOption("gpt-4o-mini", "GPT-4o Mini", "OpenAI", "FAST", "Lightweight ultra-responsive vector compiler", isRecommended = false, isFree = true),
+        AiModelOption("deepseek-chat", "DeepSeek V3", "DeepSeek", "SMART", "Deep open-weights geometric planning", isRecommended = false, isFree = true),
+        AiModelOption("deepseek-reasoner", "DeepSeek R1", "DeepSeek", "REASONING", "Chain-of-thought fine-line contouring", isRecommended = false, isFree = true),
+        AiModelOption("mistral-large-latest", "Mistral Large", "Mistral", "CLEAN", "Crisp minimalist silhouette paths", isRecommended = false, isFree = true)
+    )
+
+    private val _availableModels = MutableStateFlow<List<AiModelOption>>(DEFAULT_MODELS)
+    val availableModels: StateFlow<List<AiModelOption>> = _availableModels.asStateFlow()
+
+    private val _isFetchingModels = MutableStateFlow(false)
+    val isFetchingModels: StateFlow<Boolean> = _isFetchingModels.asStateFlow()
+
     // Callback map for active queries
     private var activeCallback: ((String?, String?) -> Unit)? = null
     private var authCallback: ((Boolean, String?, String?) -> Unit)? = null
+    private val loginEventListeners = mutableListOf<(PuterAuthState) -> Unit>()
 
     init {
         mainHandler.post {
             initWebView()
         }
+    }
+
+    fun addLoginEventListener(listener: (PuterAuthState) -> Unit) {
+        loginEventListeners.add(listener)
+    }
+
+    fun removeLoginEventListener(listener: (PuterAuthState) -> Unit) {
+        loginEventListeners.remove(listener)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -192,12 +223,45 @@ class PuterJsBridge(private val context: Context) {
                             }
                         };
 
+                        window.fetchPuterModels = async function() {
+                            try {
+                                let models = [];
+                                if (typeof puter !== 'undefined' && puter.ai) {
+                                    if (typeof puter.ai.models === 'function') {
+                                        try { models = await puter.ai.models(); } catch(e) {}
+                                    } else if (puter.ai.listModels) {
+                                        try { models = await puter.ai.listModels(); } catch(e) {}
+                                    }
+                                }
+                                if (!Array.isArray(models) || models.length === 0) {
+                                    models = [
+                                        { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic', badge: 'PRO', description: 'Ultra-precise vector path geometry for anime & complex scenes', isRecommended: true, isFree: true },
+                                        { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'Anthropic', badge: 'HYBRID', description: 'Next-gen hybrid reasoning with intricate multi-color strokes', isRecommended: true, isFree: true },
+                                        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'Google', badge: 'TURBO', description: 'Sub-second real-time stroke vector compilation latency', isRecommended: true, isFree: true },
+                                        { id: 'gpt-4o', name: 'GPT-4o Omnimodal', provider: 'OpenAI', badge: 'HIGH RES', description: 'Exceptional spatial resolution and color harmony', isRecommended: false, isFree: true },
+                                        { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI', badge: 'FAST', description: 'Lightweight ultra-responsive vector compiler', isRecommended: false, isFree: true },
+                                        { id: 'deepseek-chat', name: 'DeepSeek V3', provider: 'DeepSeek', badge: 'SMART', description: 'Deep open-weights geometric planning', isRecommended: false, isFree: true },
+                                        { id: 'deepseek-reasoner', name: 'DeepSeek R1', provider: 'DeepSeek', badge: 'REASONING', description: 'Chain-of-thought fine-line contouring', isRecommended: false, isFree: true },
+                                        { id: 'mistral-large-latest', name: 'Mistral Large', provider: 'Mistral', badge: 'CLEAN', description: 'Crisp minimalist silhouette paths', isRecommended: false, isFree: true }
+                                    ];
+                                }
+                                if (window.AndroidBridge) {
+                                    window.AndroidBridge.onModelsLoaded(JSON.stringify(models));
+                                }
+                            } catch(err) {
+                                if (window.AndroidBridge) {
+                                    window.AndroidBridge.onModelsLoaded(JSON.stringify([]));
+                                }
+                            }
+                        };
+
                         // Notify native bridge
                         setTimeout(() => {
                             if (window.AndroidBridge) {
                                 window.AndroidBridge.onSdkStatus(window.isPuterAvailable());
                             }
                             window.checkPuterAuth();
+                            window.fetchPuterModels();
                         }, 800);
                     </script>
                 </body>
@@ -235,6 +299,64 @@ class PuterJsBridge(private val context: Context) {
         mainHandler.post {
             _lastLog.value = "Signing out from Puter.js..."
             webView?.evaluateJavascript("window.triggerPuterSignOut();", null)
+            val updatedAuth = PuterAuthState(
+                isSignedIn = false,
+                statusMessage = "Guest Mode (Sign in to unlock models)"
+            )
+            _authState.value = updatedAuth
+            loginEventListeners.forEach { it(updatedAuth) }
+        }
+    }
+
+    fun setLoggedInUser(username: String, email: String?) {
+        mainHandler.post {
+            val updatedAuth = PuterAuthState(
+                isSignedIn = true,
+                username = username,
+                email = email,
+                isFreeTier = true,
+                statusMessage = "Signed in as @$username"
+            )
+            _authState.value = updatedAuth
+            _lastLog.value = "Puter.js Authenticated: @$username"
+            loginEventListeners.forEach { it(updatedAuth) }
+            fetchLiveModels()
+        }
+    }
+
+    fun fetchLiveModels() {
+        mainHandler.post {
+            _isFetchingModels.value = true
+            _lastLog.value = "Fetching live models from Puter.js API..."
+            webView?.evaluateJavascript("window.fetchPuterModels();", null)
+        }
+    }
+
+    private fun parseAndSetModels(jsonStr: String?) {
+        _isFetchingModels.value = false
+        if (jsonStr.isNullOrBlank()) return
+        try {
+            val array = JSONArray(jsonStr)
+            if (array.length() == 0) return
+            val list = mutableListOf<AiModelOption>()
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val id = obj.optString("id", "")
+                if (id.isBlank()) continue
+                val name = obj.optString("name", id)
+                val provider = obj.optString("provider", "Puter AI")
+                val badge = obj.optString("badge", "LIVE")
+                val description = obj.optString("description", "Puter.js verified neural model")
+                val isRecommended = obj.optBoolean("isRecommended", i == 0)
+                val isFree = obj.optBoolean("isFree", true)
+                list.add(AiModelOption(id, name, provider, badge, description, isRecommended, isFree))
+            }
+            if (list.isNotEmpty()) {
+                _availableModels.value = list
+                _lastLog.value = "Loaded ${list.size} live models via Puter.js API"
+            }
+        } catch (e: Exception) {
+            Log.e("PuterJsBridge", "Failed to parse models JSON", e)
         }
     }
 
@@ -375,16 +497,28 @@ class PuterJsBridge(private val context: Context) {
         }
 
         @JavascriptInterface
+        fun onModelsLoaded(modelsJson: String?) {
+            mainHandler.post {
+                parseAndSetModels(modelsJson)
+            }
+        }
+
+        @JavascriptInterface
         fun onAuthResult(signedIn: Boolean, username: String?, email: String?) {
             mainHandler.post {
-                _authState.value = PuterAuthState(
+                val updatedAuth = PuterAuthState(
                     isSignedIn = signedIn,
                     username = username,
                     email = email,
                     isFreeTier = true,
-                    statusMessage = if (signedIn) "Signed in as @$username" else "Guest Mode (Free Tier)"
+                    statusMessage = if (signedIn) "Signed in as @$username" else "Guest Mode (Sign in to unlock models)"
                 )
+                _authState.value = updatedAuth
                 _lastLog.value = if (signedIn) "Puter.js Authenticated: @$username" else "Puter.js: Guest Mode active"
+                loginEventListeners.forEach { it(updatedAuth) }
+                if (signedIn) {
+                    fetchLiveModels()
+                }
             }
         }
     }

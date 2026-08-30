@@ -33,8 +33,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
@@ -117,11 +119,14 @@ fun OverlayChatWindow(
     isPuterSdkReady: Boolean = true,
     puterAuthState: PuterAuthState? = null,
     drawingSettings: DrawingSettings? = null,
+    onSignInClick: () -> Unit = {},
+    onRefreshModels: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
     val listState = rememberLazyListState()
     var isModelDropdownOpen by remember { mutableStateOf(false) }
+    val isUserSignedIn = puterAuthState?.isSignedIn == true
 
     val currentModel = availableModels.find { it.id == selectedModelId } ?: availableModels.firstOrNull()
 
@@ -398,115 +403,180 @@ fun OverlayChatWindow(
             // 3. MODEL SELECT DROPDOWN + PROMPT INPUT + SEND BUTTON
             // ----------------------------------------------------
             Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                // MODEL SELECT DROPDOWN ROW (Shows free models)
+                // MODEL SELECT ROW (Gated: only appears when signed in)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Box {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = CardBackground,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
-                            modifier = Modifier
-                                .clickable { isModelDropdownOpen = true }
-                                .testTag("model_select_dropdown_trigger")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                    if (isUserSignedIn) {
+                        Box {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = CardBackground,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                                modifier = Modifier
+                                    .clickable { isModelDropdownOpen = true }
+                                    .testTag("model_select_dropdown_trigger")
                             ) {
-                                Text(
-                                    text = "Model: ${currentModel?.name ?: selectedModelId}",
-                                    color = NeonCyan,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Spacer(modifier = Modifier.width(2.dp))
-                                if (currentModel?.isFree == true) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Model: ${currentModel?.name ?: selectedModelId}",
+                                        color = NeonCyan,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.width(2.dp))
                                     Surface(
                                         shape = RoundedCornerShape(4.dp),
                                         color = NeonGreen.copy(alpha = 0.2f),
                                         modifier = Modifier.padding(start = 4.dp)
                                     ) {
                                         Text(
-                                            text = "FREE",
+                                            text = currentModel?.badge ?: "LIVE",
                                             color = NeonGreen,
                                             fontSize = 8.sp,
                                             fontWeight = FontWeight.Bold,
                                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                         )
                                     }
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Select Model",
+                                        tint = TextMuted,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
-                                Icon(
-                                    imageVector = Icons.Default.ArrowDropDown,
-                                    contentDescription = "Select Model",
-                                    tint = TextMuted,
-                                    modifier = Modifier.size(16.dp)
+                            }
+
+                            // DROPDOWN MENU OF LIVE FETCHED MODELS
+                            DropdownMenu(
+                                expanded = isModelDropdownOpen,
+                                onDismissRequest = { isModelDropdownOpen = false },
+                                modifier = Modifier
+                                    .background(CardBackgroundElevated)
+                                    .border(1.dp, BorderGlass, RoundedCornerShape(8.dp))
+                            ) {
+                                // REFRESH LIVE MODELS HEADER
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "LIVE PUTER AI MODELS (${availableModels.size})",
+                                        color = TextMuted,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .clickable { onRefreshModels() }
+                                            .padding(2.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = "Refresh",
+                                            tint = NeonCyan,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text("Fetch Live", color = NeonCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                androidx.compose.material3.HorizontalDivider(
+                                    color = BorderGlass,
+                                    thickness = 0.5.dp
                                 )
+
+                                availableModels.forEach { model ->
+                                    val isSelected = model.id == selectedModelId
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Column {
+                                                    Text(
+                                                        text = model.name,
+                                                        color = if (isSelected) NeonCyan else TextWhite,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                                    )
+                                                    Text(
+                                                        text = model.description,
+                                                        color = TextMuted,
+                                                        fontSize = 9.sp
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Surface(
+                                                    shape = RoundedCornerShape(4.dp),
+                                                    color = if (model.isFree) NeonGreen.copy(alpha = 0.15f) else NeonPink.copy(alpha = 0.15f)
+                                                ) {
+                                                    Text(
+                                                        text = model.badge,
+                                                        color = if (model.isFree) NeonGreen else NeonPink,
+                                                        fontSize = 8.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            onSelectModel(model.id)
+                                            isModelDropdownOpen = false
+                                        },
+                                        leadingIcon = if (isSelected) {
+                                            {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = NeonCyan,
+                                                    modifier = Modifier.size(14.dp)
+                                                )
+                                            }
+                                        } else null
+                                    )
+                                }
                             }
                         }
-
-                        // DROPDOWN MENU OF AVAILABLE FREE MODELS
-                        DropdownMenu(
-                            expanded = isModelDropdownOpen,
-                            onDismissRequest = { isModelDropdownOpen = false },
+                    } else {
+                        // SIGN IN LOCK CTA (Models unlock only when logged in)
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = CardBackgroundElevated,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.4f)),
                             modifier = Modifier
-                                .background(CardBackgroundElevated)
-                                .border(1.dp, BorderGlass, RoundedCornerShape(8.dp))
+                                .clickable { onSignInClick() }
+                                .testTag("overlay_signin_unlock_models_btn")
                         ) {
-                            availableModels.forEach { model ->
-                                val isSelected = model.id == selectedModelId
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Column {
-                                                Text(
-                                                    text = model.name,
-                                                    color = if (isSelected) NeonCyan else TextWhite,
-                                                    fontSize = 12.sp,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                                )
-                                                Text(
-                                                    text = model.description,
-                                                    color = TextMuted,
-                                                    fontSize = 9.sp
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.width(12.dp))
-                                            Surface(
-                                                shape = RoundedCornerShape(4.dp),
-                                                color = if (model.isFree) NeonGreen.copy(alpha = 0.15f) else NeonPink.copy(alpha = 0.15f)
-                                            ) {
-                                                Text(
-                                                    text = if (model.isFree) "FREE" else model.badge,
-                                                    color = if (model.isFree) NeonGreen else NeonPink,
-                                                    fontSize = 8.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onClick = {
-                                        onSelectModel(model.id)
-                                        isModelDropdownOpen = false
-                                    },
-                                    leadingIcon = if (isSelected) {
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = null,
-                                                tint = NeonCyan,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
-                                    } else null
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Sign in to unlock models",
+                                    tint = NeonYellow,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(
+                                    text = "Sign in to unlock live AI models",
+                                    color = NeonYellow,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
