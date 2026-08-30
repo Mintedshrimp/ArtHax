@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">ArtHax</string>
-    <string name="accessibility_service_description">ArtHax AI gesture drawing assistant to execute vector brush strokes automatically on canvas apps like Sekai.</string>
-    <string name="overlay_notification_title">ArtHax Floating Deck Active</string>
-    <string name="overlay_notification_text">Floating HUD is running. Tap to open control hub.</string>
+    <string name="app_name">Art Assistant</string>
+    <string name="accessibility_service_description">AI gesture drawing assistant to execute vector brush strokes and paths automatically on canvas and drawing applications.</string>
+    <string name="overlay_notification_title">Art Assistant Floating Controller Active</string>
+    <string name="overlay_notification_text">Floating control window is active. Tap to adjust drawing settings.</string>
 </resources>
 

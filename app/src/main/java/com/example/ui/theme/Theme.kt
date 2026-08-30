@@ -11,23 +11,23 @@ import androidx.core.view.WindowCompat
 
 private val ArtHaxColorScheme = darkColorScheme(
     primary = NeonCyan,
-    onPrimary = CyberBlack,
+    onPrimary = TextWhite,
     primaryContainer = CardBackgroundElevated,
-    onPrimaryContainer = NeonCyan,
+    onPrimaryContainer = TextWhite,
     secondary = NeonPink,
-    onSecondary = CyberBlack,
+    onSecondary = TextWhite,
     secondaryContainer = CardBackground,
-    onSecondaryContainer = NeonPink,
+    onSecondaryContainer = TextWhite,
     tertiary = NeonGreen,
-    onTertiary = CyberBlack,
+    onTertiary = TextWhite,
     background = CyberBackground,
     onBackground = TextWhite,
     surface = CardBackground,
     onSurface = TextWhite,
-    surfaceVariant = SurfaceDark,
+    surfaceVariant = CardBackgroundElevated,
     onSurfaceVariant = TextMuted,
-    outline = NeonCyanDark,
-    outlineVariant = BorderGlass
+    outline = BorderGlass,
+    outlineVariant = GridLine
 )
 
 @Composable
@@ -39,8 +39,6 @@ fun MyApplicationTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window
             if (window != null) {
-                window.statusBarColor = CyberBlack.toArgb()
-                window.navigationBarColor = CyberBlack.toArgb()
                 WindowCompat.getInsetsController(window, view).apply {
                     isAppearanceLightStatusBars = false
                     isAppearanceLightNavigationBars = false

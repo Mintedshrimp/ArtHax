@@ -41,6 +41,8 @@ jobs:
           if [ ! -f my-upload-key.jks ]; then
             keytool -genkey -v -keystore my-upload-key.jks -storepass android -alias upload -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Upload Key,O=Android,C=US"
           fi
+          cp -f debug.keystore app/debug.keystore 2>/dev/null || true
+          cp -f my-upload-key.jks app/my-upload-key.jks 2>/dev/null || true
 
       - name: Build Debug APK
         run: |

@@ -17,20 +17,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import com.example.MainActivity
 import com.example.ai.PuterJsBridge
@@ -49,12 +41,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Foreground Overlay Service that displays floating bubble, expandable HUD,
- * and live canvas drawing preview on top of other apps (like Sekai).
+ * Foreground Overlay Service that provides a non-intrusive floating button
+ * to toggle the AI prompt hub and draggable canvas crop box on top of drawing apps.
  */
 class ArtHaxOverlayService : Service() {
 
@@ -77,7 +68,7 @@ class ArtHaxOverlayService : Service() {
     // Reactive States
     private val _isHudExpanded = MutableStateFlow(false)
     private val _isHudVisible = MutableStateFlow(false)
-    private val _promptText = MutableStateFlow("Sekai Chibi Miku")
+    private val _promptText = MutableStateFlow("Chibi Anime Character")
     private val _selectedModel = MutableStateFlow("claude-3-5-sonnet")
     private val _currentInstructionSet = MutableStateFlow<ArtHaxInstructionSet?>(null)
     private val _executionState = MutableStateFlow<ExecutionState>(ExecutionState.Idle)
@@ -87,21 +78,21 @@ class ArtHaxOverlayService : Service() {
 
     private val availableModels = listOf(
         AiModelOption("claude-3-5-sonnet", "Claude 3.5 Sonnet", "Anthropic", "POPULAR", "Optimal for precise vector line paths", true, true),
-        AiModelOption("gpt-4o", "GPT-4o Drawing", "OpenAI", "HD VECTORS", "High detail complex anime & cyber art", false, true),
         AiModelOption("gemini-2.0-flash", "Gemini 2.0 Flash", "Google", "ULTRA FAST", "Ultra low latency drawing instructions", false, true),
         AiModelOption("deepseek-chat", "DeepSeek Chat", "DeepSeek", "BALANCED", "Structured coordinate optimization", false, true),
+        AiModelOption("gpt-4o", "GPT-4o Drawing", "OpenAI", "HD VECTORS", "High detail complex anime & cyber art", false, true),
         AiModelOption("puter-art-v1", "Puter Art Matrix", "Puter", "OFFLINE READY", "Native Puter.js drawing synthesis", false, true)
     )
 
     private val samplePresets = listOf(
-        SekaiPreset("p1", "Chibi Miku", "Sekai Anime", "Sekai Chibi Hatsune Miku with twintails", "🎤", 18, "#00F0FF"),
-        SekaiPreset("p2", "Cyber Skull", "Cyberpunk", "Futuristic cyberpunk skull with glowing optics", "💀", 16, "#FF00E5"),
-        SekaiPreset("p3", "Neon Neko", "Mascot", "Cyberpunk neon cat with robotic whiskers", "🐱", 14, "#00FF88"),
-        SekaiPreset("p4", "Neon Dragon", "Fantasy", "Serpentine neon dragon with horns", "🐉", 20, "#00F0FF"),
-        SekaiPreset("p5", "Sakura", "Japanese", "Detailed cyber sakura blossom flower", "🌸", 15, "#FF00E5"),
-        SekaiPreset("p6", "Retro Wave", "Synthwave", "Retro synthwave sunset with horizon grid", "🌅", 22, "#FFE600"),
-        SekaiPreset("p7", "Cyber Katana", "Weapons", "Glowing cyber samurai katana blade", "⚔️", 12, "#00F0FF"),
-        SekaiPreset("p8", "Oni Mask", "Cyberpunk", "Japanese cyber oni demon mask", "👹", 17, "#FF00E5")
+        SekaiPreset("p1", "Chibi Miku", "Anime", "Sekai Chibi Hatsune Miku with twintails", "🎤", 18, "#3B82F6"),
+        SekaiPreset("p2", "Cyber Skull", "Futuristic", "Futuristic cyberpunk skull with glowing optics", "💀", 16, "#EC4899"),
+        SekaiPreset("p3", "Neon Neko", "Mascot", "Cyberpunk neon cat with robotic whiskers", "🐱", 14, "#10B981"),
+        SekaiPreset("p4", "Neon Dragon", "Fantasy", "Serpentine neon dragon with horns", "🐉", 20, "#3B82F6"),
+        SekaiPreset("p5", "Sakura", "Nature", "Detailed sakura blossom flower with petals", "🌸", 15, "#EC4899"),
+        SekaiPreset("p6", "Retro Wave", "Synthwave", "Retro synthwave sunset with horizon grid", "🌅", 22, "#F59E0B"),
+        SekaiPreset("p7", "Cyber Katana", "Weapons", "Glowing cyber samurai katana blade", "⚔️", 12, "#3B82F6"),
+        SekaiPreset("p8", "Oni Mask", "Traditional", "Japanese cyber oni demon mask", "👹", 17, "#EC4899")
     )
 
     override fun onCreate() {
@@ -156,7 +147,7 @@ class ArtHaxOverlayService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "ArtHax Floating Assistant",
+                "Art Assistant Floating Service",
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
@@ -170,8 +161,8 @@ class ArtHaxOverlayService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("ArtHax // Floating Assistant Active")
-            .setContentText("Tap to open controller hub. Overlay HUD ready.")
+            .setContentTitle("Art Assistant Active")
+            .setContentText("Tap the floating bubble to open AI prompt & crop tools.")
             .setSmallIcon(android.R.drawable.ic_menu_edit)
             .setContentIntent(pendingOpen)
             .setOngoing(true)
@@ -181,7 +172,7 @@ class ArtHaxOverlayService : Service() {
     }
 
     // ==========================================
-    // FLOATING BUBBLE
+    // FLOATING BUBBLE (Always Accessible)
     // ==========================================
 
     @SuppressLint("ClickableViewAccessibility")
@@ -201,18 +192,18 @@ class ArtHaxOverlayService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 30
+            x = 24
             y = 350
         }
 
         val view = createOverlayComposeView(this, overlayLifecycleOwner) {
             val execState by _executionState.collectAsState()
-            val isExpanded by _isHudExpanded.collectAsState()
+            val isVisible by _isHudVisible.collectAsState()
 
             MyApplicationTheme {
                 FloatingButtonWidget(
                     executionState = execState,
-                    isExpanded = isExpanded,
+                    isExpanded = isVisible,
                     onClick = {
                         if (execState is ExecutionState.Drawing) {
                             abortDrawing()
@@ -224,7 +215,7 @@ class ArtHaxOverlayService : Service() {
             }
         }
 
-        // Drag listener on floating button
+        // Touch listener for smooth dragging
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
@@ -299,6 +290,8 @@ class ArtHaxOverlayService : Service() {
             val execState by _executionState.collectAsState()
             val settings by _drawingSettings.collectAsState()
             val isCalibrationMode by _isCalibrationMode.collectAsState()
+            val isPuterReady by puterJsBridge.isSdkReady.collectAsState()
+            val puterAuth by puterJsBridge.authState.collectAsState()
 
             if (isVisible) {
                 MyApplicationTheme {
@@ -322,19 +315,57 @@ class ArtHaxOverlayService : Service() {
                         onExecuteDraw = { executeDrawing() },
                         onAbortDraw = { abortDrawing() },
                         onToggleExpand = { _isHudExpanded.value = !_isHudExpanded.value },
-                        onCloseOverlay = { _isHudVisible.value = false },
+                        onCloseOverlay = { setHudVisible(false) },
                         onToggleCalibrationMode = {
                             toggleCalibrationMode()
                         },
-                        isCalibrationMode = isCalibrationMode
+                        isCalibrationMode = isCalibrationMode,
+                        isPuterSdkReady = isPuterReady,
+                        puterAuthState = puterAuth
                     )
                 }
             }
         }
 
+        // Outside touch listener to close HUD when tapping elsewhere
+        view.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_OUTSIDE && _isHudVisible.value) {
+                setHudVisible(false)
+                true
+            } else {
+                false
+            }
+        }
+
         hudView = view
-        // Initially attached
+        view.visibility = View.GONE
         windowManager.addView(view, hudParams)
+    }
+
+    private fun setHudVisible(visible: Boolean) {
+        _isHudVisible.value = visible
+        val hView = hudView ?: return
+        val hParams = hudParams ?: return
+
+        if (visible) {
+            hView.visibility = View.VISIBLE
+            hParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+        } else {
+            hView.visibility = View.GONE
+            hParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        }
+
+        try {
+            windowManager.updateViewLayout(hView, hParams)
+        } catch (e: Exception) {
+            // Updated
+        }
+    }
+
+    private fun toggleHudVisibility() {
+        setHudVisible(!_isHudVisible.value)
     }
 
     // ==========================================
@@ -362,7 +393,6 @@ class ArtHaxOverlayService : Service() {
         val view = createOverlayComposeView(this, overlayLifecycleOwner) {
             val instructionSet by _currentInstructionSet.collectAsState()
             val execState by _executionState.collectAsState()
-            val settings by _drawingSettings.collectAsState()
             val bounds by _calibrationBounds.collectAsState()
             val isCalibrating by _isCalibrationMode.collectAsState()
 
@@ -382,13 +412,15 @@ class ArtHaxOverlayService : Service() {
                         instructionSet = instructionSet,
                         executionState = execState
                     )
-                } else if (settings.showPreviewOverlay || execState is ExecutionState.Drawing) {
+                } else if (execState is ExecutionState.Drawing) {
+                    // Pure transparent vector stroke drawing layer (touch passthrough)
                     Box(modifier = Modifier.fillMaxSize().background(Color.Transparent)) {
                         CyberCanvas(
                             instructionSet = instructionSet,
                             executionState = execState,
                             bounds = null,
                             showGrid = false,
+                            transparentBackground = true,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -397,6 +429,7 @@ class ArtHaxOverlayService : Service() {
         }
 
         previewOverlayView = view
+        view.visibility = View.GONE
         windowManager.addView(view, previewParams)
     }
 
@@ -411,13 +444,22 @@ class ArtHaxOverlayService : Service() {
 
         if (enabled) {
             // Make touchable so user can drag the cutout box
+            pView.visibility = View.VISIBLE
             pParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-            _isHudVisible.value = false // Minimize HUD when dragging cutout
+            setHudVisible(false) // Minimize HUD when dragging cutout
         } else {
-            // Passive overlay
-            pParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            // If drawing is not active, hide preview completely
+            val isDrawing = _executionState.value is ExecutionState.Drawing
+            if (isDrawing) {
+                pView.visibility = View.VISIBLE
+                pParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            } else {
+                pView.visibility = View.GONE
+                pParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            }
         }
 
         try {
@@ -425,10 +467,6 @@ class ArtHaxOverlayService : Service() {
         } catch (e: Exception) {
             // View layout updated
         }
-    }
-
-    private fun toggleHudVisibility() {
-        _isHudVisible.value = !_isHudVisible.value
     }
 
     // ==========================================
@@ -449,7 +487,7 @@ class ArtHaxOverlayService : Service() {
         val accessibility = ArtHaxAccessibilityService.instance
 
         if (accessibility == null) {
-            _executionState.value = ExecutionState.Error("Accessibility Service is not enabled. Open ArtHax to enable.")
+            _executionState.value = ExecutionState.Error("Accessibility Service is not enabled. Open app to enable.")
             return
         }
 
@@ -458,7 +496,14 @@ class ArtHaxOverlayService : Service() {
         windowManager.defaultDisplay.getRealMetrics(metrics)
 
         if (_drawingSettings.value.autoMinimizeOnExecute) {
-            _isHudVisible.value = false
+            setHudVisible(false)
+        }
+
+        // Show transparent stroke preview during drawing
+        previewOverlayView?.visibility = View.VISIBLE
+        previewParams?.let { p ->
+            p.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            try { windowManager.updateViewLayout(previewOverlayView, p) } catch (e: Exception) {}
         }
 
         accessibility.startDrawing(
@@ -469,6 +514,11 @@ class ArtHaxOverlayService : Service() {
             screenHeight = metrics.heightPixels,
             onStateUpdate = { state ->
                 _executionState.value = state
+                if (state is ExecutionState.Completed || state is ExecutionState.Idle || state is ExecutionState.Error) {
+                    if (!_isCalibrationMode.value) {
+                        previewOverlayView?.visibility = View.GONE
+                    }
+                }
             }
         )
     }
@@ -476,6 +526,9 @@ class ArtHaxOverlayService : Service() {
     fun abortDrawing() {
         ArtHaxAccessibilityService.instance?.abortCurrentDrawing()
         _executionState.value = ExecutionState.Idle
+        if (!_isCalibrationMode.value) {
+            previewOverlayView?.visibility = View.GONE
+        }
     }
 
     companion object {

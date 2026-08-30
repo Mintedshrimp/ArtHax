@@ -12,11 +12,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PlayArrow
@@ -37,16 +34,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -54,7 +48,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -62,18 +55,16 @@ import androidx.compose.ui.unit.sp
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.CalibrationBounds
 import com.example.model.ExecutionState
-import com.example.ui.theme.CyberBlack
+import com.example.ui.theme.BorderGlass
+import com.example.ui.theme.CardBackgroundElevated
 import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
 import kotlin.math.roundToInt
 
 /**
- * Interactive full-screen overlay with a freely draggable and resizable "Cutout Box"
- * allowing the user to define the exact drawing canvas area on top of other apps (like Sekai).
+ * Interactive overlay with a draggable and resizable cutout box
+ * allowing the user to define the exact drawing canvas area on top of other apps.
  */
 @Composable
 fun DraggableCutoutBox(
@@ -88,10 +79,10 @@ fun DraggableCutoutBox(
     val density = LocalDensity.current
     val infiniteTransition = rememberInfiniteTransition(label = "cutout_pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f,
+        initialValue = 0.7f,
         targetValue = 1.0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
+            animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse_alpha"
@@ -117,7 +108,7 @@ fun DraggableCutoutBox(
         Canvas(modifier = Modifier.fillMaxSize()) {
             // Draw dimmed outer overlay
             drawRect(
-                color = Color.Black.copy(alpha = 0.55f),
+                color = Color.Black.copy(alpha = 0.6f),
                 size = size
             )
 
@@ -129,12 +120,12 @@ fun DraggableCutoutBox(
                 blendMode = BlendMode.Clear
             )
 
-            // Draw glowing cyber grid inside cutout
-            val gridSpacing = 36f
+            // Draw subtle grid inside cutout
+            val gridSpacing = 40f
             var x = boxLeftPx + gridSpacing
             while (x < boxRightPx) {
                 drawLine(
-                    color = NeonCyan.copy(alpha = 0.12f),
+                    color = NeonCyan.copy(alpha = 0.1f),
                     start = Offset(x, boxTopPx),
                     end = Offset(x, boxBottomPx),
                     strokeWidth = 1f
@@ -144,7 +135,7 @@ fun DraggableCutoutBox(
             var y = boxTopPx + gridSpacing
             while (y < boxBottomPx) {
                 drawLine(
-                    color = NeonCyan.copy(alpha = 0.12f),
+                    color = NeonCyan.copy(alpha = 0.1f),
                     start = Offset(boxLeftPx, y),
                     end = Offset(boxRightPx, y),
                     strokeWidth = 1f
@@ -152,18 +143,18 @@ fun DraggableCutoutBox(
                 y += gridSpacing
             }
 
-            // Draw Neon Bounding Border
+            // Draw Bounding Border
             drawRect(
                 color = NeonCyan.copy(alpha = pulseAlpha),
                 topLeft = Offset(boxLeftPx, boxTopPx),
                 size = Size(boxWidthPx, boxHeightPx),
-                style = Stroke(width = 2.5f)
+                style = Stroke(width = 2.dp.toPx())
             )
 
-            // Draw Corner Cyber Accents (L-shapes)
-            val cornerLen = 24f
-            val cornerStroke = 4f
-            val cornerColor = NeonPink
+            // Draw Corner Accents (L-shapes)
+            val cornerLen = 20.dp.toPx()
+            val cornerStroke = 3.dp.toPx()
+            val cornerColor = NeonCyan
 
             // Top-Left
             drawLine(cornerColor, Offset(boxLeftPx, boxTopPx), Offset(boxLeftPx + cornerLen, boxTopPx), cornerStroke, StrokeCap.Round)
@@ -180,13 +171,6 @@ fun DraggableCutoutBox(
             // Bottom-Right
             drawLine(cornerColor, Offset(boxRightPx, boxBottomPx), Offset(boxRightPx - cornerLen, boxBottomPx), cornerStroke, StrokeCap.Round)
             drawLine(cornerColor, Offset(boxRightPx, boxBottomPx), Offset(boxRightPx, boxBottomPx - cornerLen), cornerStroke, StrokeCap.Round)
-
-            // Draw center crosshair
-            val cx = (boxLeftPx + boxRightPx) / 2f
-            val cy = (boxTopPx + boxBottomPx) / 2f
-            val chLen = 14f
-            drawLine(NeonCyan.copy(alpha = 0.5f), Offset(cx - chLen, cy), Offset(cx + chLen, cy), 1.5f)
-            drawLine(NeonCyan.copy(alpha = 0.5f), Offset(cx, cy - chLen), Offset(cx, cy + chLen), 1.5f)
         }
 
         // 2. Render vector stroke preview inside cutout if available
@@ -210,7 +194,7 @@ fun DraggableCutoutBox(
 
                         drawPath(
                             path = path,
-                            color = stroke.parseColor().copy(alpha = 0.7f),
+                            color = stroke.parseColor().copy(alpha = 0.8f),
                             style = Stroke(width = stroke.strokeWidth, cap = StrokeCap.Round)
                         )
                     }
@@ -234,10 +218,10 @@ fun DraggableCutoutBox(
                         val currentW = bounds.right - bounds.left
                         val currentH = bounds.bottom - bounds.top
 
-                        var newLeft = (bounds.left + dx).coerceIn(0.0f, 1.0f - currentW)
-                        var newTop = (bounds.top + dy).coerceIn(0.0f, 1.0f - currentH)
-                        var newRight = newLeft + currentW
-                        var newBottom = newTop + currentH
+                        val newLeft = (bounds.left + dx).coerceIn(0.0f, 1.0f - currentW)
+                        val newTop = (bounds.top + dy).coerceIn(0.0f, 1.0f - currentH)
+                        val newRight = newLeft + currentW
+                        val newBottom = newTop + currentH
 
                         onBoundsChange(
                             CalibrationBounds(
@@ -254,13 +238,13 @@ fun DraggableCutoutBox(
         ) {
             // Drag icon badge in center
             Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = CyberBlack.copy(alpha = 0.75f),
-                border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.6f)),
+                shape = RoundedCornerShape(12.dp),
+                color = CardBackgroundElevated.copy(alpha = 0.9f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
                 modifier = Modifier.padding(8.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -271,11 +255,10 @@ fun DraggableCutoutBox(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "DRAG TO MOVE CANVAS",
-                        color = NeonCyan,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+                        text = "Drag to Move",
+                        color = TextWhite,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
@@ -351,40 +334,39 @@ fun DraggableCutoutBox(
         Surface(
             modifier = Modifier
                 .offset { IntOffset((boxLeftPx.coerceAtLeast(16f)).roundToInt(), actionBarY.roundToInt()) }
-                .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = NeonPink)
-                .clip(RoundedCornerShape(20.dp))
-                .border(1.dp, NeonPink.copy(alpha = 0.7f), RoundedCornerShape(20.dp))
+                .shadow(12.dp, RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(14.dp))
+                .border(1.dp, BorderGlass, RoundedCornerShape(14.dp))
                 .testTag("cutout_action_bar"),
-            color = CyberBlack.copy(alpha = 0.92f)
+            color = CardBackgroundElevated
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // START DRAWING BUTTON
                 Button(
                     onClick = onConfirmAndDraw,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
                     modifier = Modifier.testTag("cutout_draw_now_btn")
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        tint = CyberBlack,
-                        modifier = Modifier.size(18.dp)
+                        tint = TextWhite,
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "START DRAWING",
-                        color = CyberBlack,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+                        text = "Start Drawing",
+                        color = TextWhite,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
 
                 // Reset Bounds Button
                 IconButton(
@@ -396,7 +378,7 @@ fun DraggableCutoutBox(
                     Icon(
                         imageVector = Icons.Default.RestartAlt,
                         contentDescription = "Reset Canvas Size",
-                        tint = NeonCyan
+                        tint = TextMuted
                     )
                 }
 
@@ -446,14 +428,14 @@ private fun CornerResizeHandle(
             .testTag(testTag),
         contentAlignment = Alignment.Center
     ) {
-        // Glowing handle circle
+        // Handle circle
         Box(
             modifier = Modifier
-                .size(20.dp)
-                .shadow(8.dp, CircleShape, spotColor = NeonPink)
+                .size(18.dp)
+                .shadow(6.dp, CircleShape)
                 .clip(CircleShape)
-                .background(NeonPink)
-                .border(2.dp, Color.White, CircleShape)
+                .background(NeonCyan)
+                .border(2.dp, TextWhite, CircleShape)
         )
     }
 }

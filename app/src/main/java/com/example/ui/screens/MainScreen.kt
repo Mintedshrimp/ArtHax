@@ -104,6 +104,7 @@ import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.NeonPink
 import com.example.ui.theme.NeonPurple
 import com.example.ui.theme.NeonYellow
+import com.example.ui.theme.TextCyan
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
 import com.example.ui.viewmodel.MainViewModel
@@ -177,27 +178,36 @@ fun MainScreen(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .clip(CircleShape)
-                                .background(NeonCyan)
-                                .shadow(8.dp, CircleShape, spotColor = NeonCyan)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "ArtHax // NEON CORE",
-                            color = NeonCyan,
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp
-                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = NeonCyan.copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.5f)),
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Brush,
+                                    contentDescription = null,
+                                    tint = NeonCyan,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Art Assistant",
+                                color = TextWhite,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "AI Floating Drawing Assistant • Sekai Engine",
+                        text = "Automated vector drawing and floating overlay assistant",
                         color = TextMuted,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
 
@@ -208,12 +218,12 @@ fun MainScreen(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh Status",
-                        tint = NeonCyan
+                        tint = TextMuted
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // ==========================================
             // STATUS CHIPS (Overlay, Accessibility, Puter.js)
@@ -226,30 +236,30 @@ fun MainScreen(
             ) {
                 // Floating Overlay Permission Chip
                 StatusBadgeChip(
-                    title = "FLOATING OVERLAY",
-                    status = if (overlayGranted) "READY" else "PERMISSION REQ",
+                    title = "Floating Overlay",
+                    status = if (overlayGranted) "Active" else "Action Required",
                     isActive = overlayGranted,
                     activeColor = NeonGreen,
-                    inactiveColor = NeonPink,
+                    inactiveColor = NeonYellow,
                     onClick = { viewModel.openOverlaySettings() }
                 )
 
                 // Accessibility Service Chip
                 StatusBadgeChip(
-                    title = "ACCESSIBILITY GESTURE",
-                    status = if (accessibilityEnabled) "ONLINE" else "TAP TO ENABLE",
+                    title = "Gesture Service",
+                    status = if (accessibilityEnabled) "Connected" else "Tap to Enable",
                     isActive = accessibilityEnabled,
-                    activeColor = NeonCyan,
+                    activeColor = NeonGreen,
                     inactiveColor = NeonYellow,
                     onClick = { viewModel.openAccessibilitySettings() }
                 )
 
                 // Puter.js AI Bridge Chip
                 StatusBadgeChip(
-                    title = "PUTER.JS AI",
-                    status = if (sdkReady) "CONNECTED" else "CONNECTING",
+                    title = "AI Cloud Engine",
+                    status = if (sdkReady) (if (puterAuthState.isSignedIn) "Signed In" else "Ready (Guest)") else "Connecting...",
                     isActive = sdkReady,
-                    activeColor = NeonPurple,
+                    activeColor = NeonCyan,
                     inactiveColor = TextMuted,
                     onClick = { showPuterAuthSheet = true }
                 )
@@ -257,7 +267,7 @@ fun MainScreen(
 
             // Quick Setup Alert if permissions missing
             if (!overlayGranted || !accessibilityEnabled) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 PermissionSetupCard(
                     overlayGranted = overlayGranted,
                     accessibilityEnabled = accessibilityEnabled,
@@ -275,11 +285,8 @@ fun MainScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .border(
-                        width = 1.5.dp,
-                        brush = Brush.horizontalGradient(
-                            if (overlayServiceRunning) listOf(NeonPink, NeonPurple)
-                            else listOf(NeonCyan, NeonPink)
-                        ),
+                        width = 1.dp,
+                        color = if (overlayServiceRunning) NeonPink.copy(alpha = 0.5f) else BorderGlass,
                         shape = RoundedCornerShape(16.dp)
                     )
                     .testTag("floating_launcher_card"),
@@ -289,88 +296,103 @@ fun MainScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (overlayServiceRunning) "FLOATING OVERLAY DECK ACTIVE" else "ACTIVATE FLOATING OVERLAY",
-                            color = if (overlayServiceRunning) NeonPink else NeonCyan,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            text = if (overlayServiceRunning) "Floating Overlay Active" else "Floating Drawing Assistant",
+                            color = TextWhite,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = if (overlayServiceRunning) "Tap bubble to draw over other apps (Sekai)" else "Overlays floating bubble & HUD on other apps",
+                            text = if (overlayServiceRunning) "Tap the floating bubble over canvas apps to draw" else "Show floating bubble to trigger drawings over other apps",
                             color = TextMuted,
-                            fontSize = 11.sp
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Button(
                         onClick = { viewModel.toggleOverlayService() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (overlayServiceRunning) NeonPink else NeonCyan
+                            containerColor = if (overlayServiceRunning) CardBackground else NeonCyan
                         ),
-                        shape = RoundedCornerShape(20.dp),
+                        border = if (overlayServiceRunning) androidx.compose.foundation.BorderStroke(1.dp, NeonPink) else null,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.testTag("launch_overlay_btn")
                     ) {
                         Icon(
                             imageVector = if (overlayServiceRunning) Icons.Default.Stop else Icons.Default.Layers,
                             contentDescription = null,
-                            tint = CyberBlack,
+                            tint = if (overlayServiceRunning) NeonPink else TextWhite,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (overlayServiceRunning) "STOP" else "LAUNCH",
-                            color = CyberBlack,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            text = if (overlayServiceRunning) "Stop" else "Launch",
+                            color = if (overlayServiceRunning) NeonPink else TextWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // ==========================================
-            // INTERACTIVE CYBER SANDBOX CANVAS
+            // INTERACTIVE CANVAS & STROKE PREVIEW
             // ==========================================
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "SANDBOX CANVAS & STROKE PREVIEW",
-                    color = NeonCyan,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
+                Column {
+                    Text(
+                        text = "Canvas Preview & Simulation",
+                        color = TextWhite,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Real-time preview of vector drawing paths",
+                        color = TextMuted,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
 
                 if (instructionSet != null) {
-                    Text(
-                        text = "${instructionSet?.strokes?.size} STROKES • ${instructionSet?.totalEstimatedPoints} PTS",
-                        color = NeonPink,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace
-                    )
+                    Surface(
+                        color = CardBackgroundElevated,
+                        shape = RoundedCornerShape(8.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass)
+                    ) {
+                        Text(
+                            text = "${instructionSet?.strokes?.size} strokes • ${instructionSet?.totalEstimatedPoints} points",
+                            color = TextCyan,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Canvas Display Viewport
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1.15f)
-                    .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = NeonCyan)
                     .clip(RoundedCornerShape(16.dp))
+                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
             ) {
                 if (isCutoutInteractiveMode) {
                     DraggableCutoutBox(
@@ -398,12 +420,12 @@ fun MainScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Simulation & Test Gesture Action Controls
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (execState is ExecutionState.Drawing) {
                     Button(
@@ -412,17 +434,16 @@ fun MainScreen(
                             .weight(1f)
                             .height(44.dp)
                             .testTag("sandbox_abort_btn"),
-                        shape = RoundedCornerShape(22.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonPink)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonYellow)
                     ) {
-                        Icon(Icons.Default.Stop, contentDescription = null, tint = CyberBlack)
+                        Icon(Icons.Default.Stop, contentDescription = null, tint = TextWhite)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "ABORT DRAWING",
-                            color = CyberBlack,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            text = "Stop Drawing",
+                            color = TextWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
                         )
                     }
                 } else {
@@ -431,20 +452,18 @@ fun MainScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(44.dp)
-                            .border(1.dp, NeonCyan, RoundedCornerShape(22.dp))
                             .testTag("sandbox_sim_btn"),
-                        shape = RoundedCornerShape(22.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CardBackgroundElevated),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
                         enabled = instructionSet != null && instructionSet!!.strokes.isNotEmpty()
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = NeonCyan)
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = TextWhite)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "SIMULATE IN SANDBOX",
-                            color = NeonCyan,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            text = "Simulate Drawing",
+                            color = TextWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
                         )
                     }
                 }
@@ -454,26 +473,25 @@ fun MainScreen(
                     onClick = { isCutoutInteractiveMode = !isCutoutInteractiveMode },
                     modifier = Modifier
                         .height(44.dp)
-                        .border(1.dp, if (isCutoutInteractiveMode) NeonPink else NeonCyan, RoundedCornerShape(22.dp))
                         .testTag("toggle_cutout_interactive_btn"),
-                    shape = RoundedCornerShape(22.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isCutoutInteractiveMode) NeonPink else BorderGlass),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isCutoutInteractiveMode) NeonPink.copy(alpha = 0.25f) else CardBackground
+                        containerColor = if (isCutoutInteractiveMode) CardBackgroundElevated else CardBackground
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Default.FitScreen,
                         contentDescription = null,
-                        tint = if (isCutoutInteractiveMode) NeonPink else NeonCyan,
+                        tint = if (isCutoutInteractiveMode) NeonPink else TextWhite,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isCutoutInteractiveMode) "DONE" else "DRAG CUTOUT",
-                        color = if (isCutoutInteractiveMode) NeonPink else NeonCyan,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+                        text = if (isCutoutInteractiveMode) "Done" else "Adjust Bounds",
+                        color = if (isCutoutInteractiveMode) NeonPink else TextWhite,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
 
@@ -482,25 +500,25 @@ fun MainScreen(
                     onClick = { showCalibrateSliders = !showCalibrateSliders },
                     modifier = Modifier
                         .height(44.dp)
-                        .border(1.dp, if (showCalibrateSliders) NeonPink else BorderGlass, RoundedCornerShape(22.dp))
                         .testTag("toggle_calibration_ui_btn"),
-                    shape = RoundedCornerShape(22.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, if (showCalibrateSliders) NeonCyan else BorderGlass),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (showCalibrateSliders) NeonPink.copy(alpha = 0.2f) else CardBackground
+                        containerColor = if (showCalibrateSliders) CardBackgroundElevated else CardBackground
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = null,
-                        tint = if (showCalibrateSliders) NeonPink else TextMuted,
+                        tint = if (showCalibrateSliders) NeonCyan else TextMuted,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "SLIDERS",
-                        color = if (showCalibrateSliders) NeonPink else TextWhite,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace
+                        text = "Sliders",
+                        color = if (showCalibrateSliders) NeonCyan else TextWhite,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
@@ -514,37 +532,36 @@ fun MainScreen(
                         .clip(RoundedCornerShape(14.dp))
                         .background(CardBackground)
                         .border(1.dp, BorderGlass, RoundedCornerShape(14.dp))
-                        .padding(14.dp)
+                        .padding(16.dp)
                 ) {
                     Text(
-                        text = "SEKAI CANVAS BOUNDS CALIBRATION",
-                        color = NeonPink,
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
+                        text = "Canvas Calibration Controls",
+                        color = TextWhite,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Align this box to the exact target drawing canvas in Sekai",
+                        text = "Configure offset boundaries to match your target drawing application",
                         color = TextMuted,
-                        fontSize = 10.sp
+                        style = MaterialTheme.typography.bodyMedium
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Text("Top Offset: ${(bounds.top * 100).toInt()}%", color = TextWhite, fontSize = 11.sp)
+                    Text("Top Boundary: ${(bounds.top * 100).toInt()}%", color = TextWhite, fontSize = 12.sp)
                     Slider(
                         value = bounds.top,
                         onValueChange = { viewModel.updateCalibrationBounds(bounds.copy(top = it)) },
                         valueRange = 0.05f..0.50f,
-                        colors = SliderDefaults.colors(thumbColor = NeonPink, activeTrackColor = NeonPink)
+                        colors = SliderDefaults.colors(thumbColor = NeonCyan, activeTrackColor = NeonCyan)
                     )
 
-                    Text("Bottom Offset: ${(bounds.bottom * 100).toInt()}%", color = TextWhite, fontSize = 11.sp)
+                    Text("Bottom Boundary: ${(bounds.bottom * 100).toInt()}%", color = TextWhite, fontSize = 12.sp)
                     Slider(
                         value = bounds.bottom,
                         onValueChange = { viewModel.updateCalibrationBounds(bounds.copy(bottom = it)) },
                         valueRange = 0.50f..0.95f,
-                        colors = SliderDefaults.colors(thumbColor = NeonPink, activeTrackColor = NeonPink)
+                        colors = SliderDefaults.colors(thumbColor = NeonCyan, activeTrackColor = NeonCyan)
                     )
                 }
             }
@@ -555,20 +572,25 @@ fun MainScreen(
             // PROMPT INPUT & AI MODEL SELECTOR
             // ==========================================
             Text(
-                text = "AI DRAWING INSTRUCTION GENERATOR",
-                color = NeonCyan,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
+                text = "AI Drawing Generator",
+                color = TextWhite,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Describe an image or subject to generate automated drawing strokes",
+                color = TextMuted,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Prompt Field with Neon Underline
+            // Prompt Field
             TextField(
                 value = promptText,
                 onValueChange = { viewModel.setPrompt(it) },
                 placeholder = {
-                    Text("Enter drawing prompt or character name...", color = TextMuted, fontSize = 13.sp)
+                    Text("Describe what you want to draw (e.g., Cute cat, Mountain sunrise, Castle sketch)...", color = TextMuted, fontSize = 13.sp)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -582,7 +604,7 @@ fun MainScreen(
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite,
-                    cursorColor = NeonPink
+                    cursorColor = NeonCyan
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -601,21 +623,21 @@ fun MainScreen(
                         if (execState is ExecutionState.Generating) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = NeonPink,
+                                color = NeonCyan,
                                 strokeWidth = 2.dp
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = "Generate Vector Strokes",
-                                tint = NeonPink
+                                tint = NeonCyan
                             )
                         }
                     }
                 }
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // ==========================================
             // PUTER.JS AUTHENTICATION & FREE MODELS CARD
@@ -623,7 +645,7 @@ fun MainScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, if (puterAuthState.isSignedIn) NeonGreen.copy(alpha = 0.5f) else BorderGlass, RoundedCornerShape(16.dp))
+                    .border(1.dp, if (puterAuthState.isSignedIn) NeonGreen.copy(alpha = 0.4f) else BorderGlass, RoundedCornerShape(16.dp))
                     .testTag("puter_auth_card"),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
@@ -631,7 +653,7 @@ fun MainScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp)
+                        .padding(16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -639,58 +661,56 @@ fun MainScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = null,
-                                tint = if (puterAuthState.isSignedIn) NeonGreen else NeonCyan,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (puterAuthState.isSignedIn) NeonGreen.copy(alpha = 0.15f) else NeonCyan.copy(alpha = 0.15f),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = null,
+                                        tint = if (puterAuthState.isSignedIn) NeonGreen else NeonCyan,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = if (puterAuthState.isSignedIn) "PUTER.JS // AUTHENTICATED" else "PUTER.JS // FREE TIER MODE",
-                                    color = if (puterAuthState.isSignedIn) NeonGreen else NeonCyan,
-                                    fontSize = 12.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold
+                                    text = if (puterAuthState.isSignedIn) "Signed in with Puter.js" else "Puter.js AI Cloud",
+                                    color = TextWhite,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
                                     text = if (puterAuthState.isSignedIn) {
-                                        "User: @${puterAuthState.username ?: "Puter User"} • Cloud Sync Active"
+                                        "@${puterAuthState.username ?: "User"} • Cloud Quota Active"
                                     } else {
-                                        "Guest Mode • All Free Models (Claude, Gemini, DeepSeek) Ready"
+                                        "Free Guest Access • Claude, Gemini, DeepSeek"
                                     },
                                     color = TextMuted,
-                                    fontSize = 11.sp
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             }
                         }
 
-                        if (puterAuthState.isSignedIn) {
-                            Button(
-                                onClick = { showPuterAuthSheet = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = NeonPink.copy(alpha = 0.25f)),
-                                border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink),
-                                shape = RoundedCornerShape(16.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.testTag("puter_account_btn")
-                            ) {
-                                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = NeonPink, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("ACCOUNT", color = NeonPink, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
-                            }
-                        } else {
-                            Button(
-                                onClick = { showPuterAuthSheet = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
-                                shape = RoundedCornerShape(16.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                modifier = Modifier.testTag("puter_login_btn")
-                            ) {
-                                Icon(Icons.Default.Login, contentDescription = null, tint = CyberBlack, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("SIGN IN / MODELS", color = CyberBlack, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
-                            }
+                        Button(
+                            onClick = { showPuterAuthSheet = true },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (puterAuthState.isSignedIn) CardBackground else NeonCyan
+                            ),
+                            border = if (puterAuthState.isSignedIn) androidx.compose.foundation.BorderStroke(1.dp, BorderGlass) else null,
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.testTag(if (puterAuthState.isSignedIn) "puter_account_btn" else "puter_login_btn")
+                        ) {
+                            Text(
+                                text = if (puterAuthState.isSignedIn) "Manage" else "Sign In / Models",
+                                color = TextWhite,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -700,12 +720,11 @@ fun MainScreen(
 
             // Model Selection Chips
             Text(
-                text = "AVAILABLE FREE & CLOUD MODELS",
+                text = "Selected AI Model",
                 color = TextMuted,
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace
+                style = MaterialTheme.typography.labelLarge
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier
@@ -717,9 +736,9 @@ fun MainScreen(
                     val isSelected = selectedModel == model.id
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(if (isSelected) NeonCyan.copy(alpha = 0.2f) else CardBackground)
-                            .border(1.dp, if (isSelected) NeonCyan else BorderGlass, RoundedCornerShape(18.dp))
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) NeonCyan.copy(alpha = 0.15f) else CardBackground)
+                            .border(1.dp, if (isSelected) NeonCyan else BorderGlass, RoundedCornerShape(12.dp))
                             .clickable { viewModel.selectModel(model.id) }
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                             .testTag("model_${model.id}")
@@ -729,34 +748,44 @@ fun MainScreen(
                                 text = model.name,
                                 color = if (isSelected) NeonCyan else TextWhite,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (model.isFree) "FREE" else model.badge,
-                                color = if (model.isFree) NeonGreen else if (isSelected) NeonPink else TextMuted,
-                                fontSize = 9.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Surface(
+                                color = if (model.isFree) NeonGreen.copy(alpha = 0.15f) else CardBackgroundElevated,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = if (model.isFree) "FREE" else model.badge,
+                                    color = if (model.isFree) NeonGreen else TextMuted,
+                                    fontSize = 9.sp,
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ==========================================
-            // SEKAI QUICK PRESET LIBRARY
+            // QUICK ART PRESET TEMPLATES
             // ==========================================
             Text(
-                text = "SEKAI & CYBER ART PRESETS",
-                color = NeonCyan,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
+                text = "Quick Art Templates",
+                color = TextWhite,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Pre-computed vector stroke sets ready to simulate or draw",
+                color = TextMuted,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -776,22 +805,22 @@ fun MainScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(10.dp),
+                                .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = preset.previewIcon, fontSize = 20.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = preset.previewIcon, fontSize = 22.sp)
+                            Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
                                     text = preset.title,
                                     color = TextWhite,
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
                                     text = "${preset.strokeCountApprox} strokes • ${preset.category}",
                                     color = TextMuted,
-                                    fontSize = 10.sp
+                                    fontSize = 11.sp
                                 )
                             }
                         }
@@ -799,7 +828,7 @@ fun MainScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // ==========================================
             // SPEED & DELAY TUNING
@@ -811,26 +840,34 @@ fun MainScreen(
                 shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackground)
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Column {
+                            Text(
+                                text = "Drawing Speed Multiplier",
+                                color = TextWhite,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Adjust how fast automated gesture strokes execute",
+                                color = TextMuted,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Text(
-                            text = "STROKE EXECUTION SPEED",
+                            text = "${String.format("%.1fx", settings.speedMultiplier)}",
                             color = NeonCyan,
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "${String.format("%.1fx", settings.speedMultiplier)} SPEED",
-                            color = NeonPink,
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily.Monospace,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Slider(
                         value = settings.speedMultiplier,
@@ -884,13 +921,12 @@ fun MainScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
                     .size(52.dp)
-                    .shadow(12.dp, CircleShape, spotColor = NeonCyan)
                     .testTag("open_floating_chat_fab")
             ) {
                 Icon(
                     imageVector = Icons.Default.SmartToy,
-                    contentDescription = "Open AI Chat Assistant",
-                    tint = CyberBlack,
+                    contentDescription = "Open AI Assistant",
+                    tint = TextWhite,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -921,11 +957,11 @@ private fun StatusBadgeChip(
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(CardBackground)
-            .border(1.dp, if (isActive) activeColor.copy(alpha = 0.4f) else inactiveColor.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+            .border(1.dp, if (isActive) activeColor.copy(alpha = 0.35f) else BorderGlass, RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .testTag("status_chip_${title.replace(" ", "_")}")
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -935,20 +971,19 @@ private fun StatusBadgeChip(
                     .clip(CircleShape)
                     .background(if (isActive) activeColor else inactiveColor)
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
                     text = title,
                     color = TextMuted,
-                    fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = status,
-                    color = if (isActive) activeColor else inactiveColor,
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    color = if (isActive) TextWhite else inactiveColor,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -965,30 +1000,29 @@ private fun PermissionSetupCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, NeonYellow.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+            .border(1.dp, NeonYellow.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
             .testTag("permission_card"),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
                     tint = NeonYellow,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "SETUP REQUIRED FOR DRAWING OVER APPS",
-                    color = NeonYellow,
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    text = "Permissions Required for Floating Drawing",
+                    color = TextWhite,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (!overlayGranted) {
                 Row(
@@ -996,39 +1030,55 @@ private fun PermissionSetupCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "1. Floating Overlay Permission",
-                        color = TextWhite,
-                        fontSize = 12.sp
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "1. Floating Overlay Permission",
+                            color = TextWhite,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Allows displaying floating controls over drawing apps",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                    }
                     Button(
                         onClick = onGrantOverlay,
                         colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Grant", color = CyberBlack, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("Grant", color = TextWhite, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
 
             if (!accessibilityEnabled) {
-                Spacer(modifier = Modifier.height(6.dp))
+                if (!overlayGranted) Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "2. Accessibility Gesture Service",
-                        color = TextWhite,
-                        fontSize = 12.sp
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "2. Accessibility Gesture Service",
+                            color = TextWhite,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Automates precise touch gestures on external canvases",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                    }
                     Button(
                         onClick = onGrantAccessibility,
                         colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Enable", color = CyberBlack, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("Enable", color = TextWhite, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }

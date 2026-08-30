@@ -1,43 +1,42 @@
 package com.example.ui.components
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Brush
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.CalibrationBounds
-import com.example.model.DrawingPoint
 import com.example.model.DrawingStroke
 import com.example.model.ExecutionState
 import com.example.ui.theme.BorderGlass
@@ -45,16 +44,151 @@ import com.example.ui.theme.CardBackground
 import com.example.ui.theme.CyberBackground
 import com.example.ui.theme.GridLine
 import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonCyanGlow
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonPinkGlow
-import com.example.ui.theme.NeonYellow
 import com.example.ui.theme.TextMuted
+import com.example.ui.theme.TextWhite
 
 /**
- * Interactive cyber canvas that renders vector art strokes, neon glow effects,
- * coordinate grids, calibration guides, and animated live drawing pointers.
+ * Clean, formal vector drawing canvas that displays vector strokes,
+ * subtle coordinate grids, calibration guides, and active drawing indicators.
+ */
+@Composable
+fun DrawingCanvas(
+    instructionSet: ArtHaxInstructionSet?,
+    executionState: ExecutionState,
+    modifier: Modifier = Modifier,
+    bounds: CalibrationBounds? = null,
+    showGrid: Boolean = true,
+    showStrokeIndices: Boolean = false,
+    interactiveGlow: Boolean = false,
+    transparentBackground: Boolean = false
+) {
+    val boxModifier = if (transparentBackground) {
+        modifier
+            .background(Color.Transparent)
+            .testTag("drawing_canvas_box")
+    } else {
+        modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(CyberBackground)
+            .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+            .testTag("drawing_canvas_box")
+    }
+
+    Box(
+        modifier = boxModifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("drawing_canvas_viewport")
+        ) {
+            val canvasW = size.width
+            val canvasH = size.height
+
+            // 1. Draw subtle guide grid (only if not in transparent overlay mode)
+            if (showGrid && !transparentBackground) {
+                drawBlueprintGrid(canvasW, canvasH)
+            }
+
+            // 2. Draw Calibration Box Guides (if active)
+            if (bounds != null) {
+                drawCalibrationGuides(bounds, canvasW, canvasH)
+            }
+
+            // 3. Draw Planned or In-Progress Vector Strokes
+            if (instructionSet != null && instructionSet.strokes.isNotEmpty()) {
+                val activeDrawing = executionState as? ExecutionState.Drawing
+
+                instructionSet.strokes.forEachIndexed { sIdx, stroke ->
+                    val isCurrentStroke = activeDrawing?.currentStrokeIndex == (sIdx + 1)
+                    val isDrawnStroke = activeDrawing == null || sIdx < (activeDrawing.currentStrokeIndex - 1)
+
+                    if (isDrawnStroke || isCurrentStroke) {
+                        drawCleanStroke(
+                            stroke = stroke,
+                            canvasW = canvasW,
+                            canvasH = canvasH,
+                            maxPointsToDraw = if (isCurrentStroke) activeDrawing.currentPointIndex else stroke.points.size
+                        )
+                    }
+                }
+            }
+
+            // 4. Draw Stylus indicator when drawing is actively running
+            if (executionState is ExecutionState.Drawing && executionState.activePoint != null) {
+                val pt = executionState.activePoint
+                val posX = pt.x * canvasW
+                val posY = pt.y * canvasH
+
+                // Outer focus ring
+                drawCircle(
+                    color = NeonCyan.copy(alpha = 0.4f),
+                    radius = 18f,
+                    center = Offset(posX, posY),
+                    style = Stroke(width = 2f)
+                )
+
+                // Core indicator
+                drawCircle(
+                    color = NeonCyan,
+                    radius = 6f,
+                    center = Offset(posX, posY)
+                )
+
+                drawCircle(
+                    color = Color.White,
+                    radius = 2.5f,
+                    center = Offset(posX, posY)
+                )
+            }
+        }
+
+        // Empty state overlay (only in app, not in transparent overlay mode)
+        if (!transparentBackground && instructionSet == null && executionState is ExecutionState.Idle) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = CardBackground,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Brush,
+                            contentDescription = null,
+                            tint = TextMuted,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "No Drawing Loaded",
+                    color = TextWhite,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Select a preset sample or use the prompt bar below to generate strokes.",
+                    color = TextMuted,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Backward compatibility alias for CyberCanvas
  */
 @Composable
 fun CyberCanvas(
@@ -64,119 +198,23 @@ fun CyberCanvas(
     bounds: CalibrationBounds? = null,
     showGrid: Boolean = true,
     showStrokeIndices: Boolean = false,
-    interactiveGlow: Boolean = true
+    interactiveGlow: Boolean = false,
+    transparentBackground: Boolean = false
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.85f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glowAlpha"
+    DrawingCanvas(
+        instructionSet = instructionSet,
+        executionState = executionState,
+        modifier = modifier,
+        bounds = bounds,
+        showGrid = showGrid,
+        showStrokeIndices = showStrokeIndices,
+        interactiveGlow = interactiveGlow,
+        transparentBackground = transparentBackground
     )
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(CyberBackground)
-            .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
-            .testTag("cyber_canvas_box"),
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .testTag("cyber_canvas_viewport")
-        ) {
-            val canvasW = size.width
-            val canvasH = size.height
-
-            // 1. Draw Cyber Matrix Grid
-            if (showGrid) {
-                drawCyberGrid(canvasW, canvasH)
-            }
-
-            // 2. Draw Sekai Calibration Box (if supplied)
-            if (bounds != null) {
-                drawCalibrationGuides(bounds, canvasW, canvasH)
-            }
-
-            // 3. Draw Planned or Completed Vector Strokes
-            if (instructionSet != null && instructionSet.strokes.isNotEmpty()) {
-                val activeDrawing = executionState as? ExecutionState.Drawing
-
-                instructionSet.strokes.forEachIndexed { sIdx, stroke ->
-                    val isCurrentStroke = activeDrawing?.currentStrokeIndex == (sIdx + 1)
-                    val isDrawnStroke = activeDrawing == null || sIdx < (activeDrawing.currentStrokeIndex - 1)
-
-                    if (isDrawnStroke || isCurrentStroke) {
-                        drawNeonStroke(
-                            stroke = stroke,
-                            canvasW = canvasW,
-                            canvasH = canvasH,
-                            glowAlpha = if (interactiveGlow) glowAlpha else 0.5f,
-                            maxPointsToDraw = if (isCurrentStroke) activeDrawing.currentPointIndex else stroke.points.size
-                        )
-                    }
-                }
-            }
-
-            // 4. Draw Active Stylus / Laser Pointer when drawing is in progress
-            if (executionState is ExecutionState.Drawing && executionState.activePoint != null) {
-                val pt = executionState.activePoint
-                val posX = pt.x * canvasW
-                val posY = pt.y * canvasH
-
-                // Outer pulsing radar ring
-                drawCircle(
-                    color = NeonCyan.copy(alpha = glowAlpha),
-                    radius = 24f,
-                    center = Offset(posX, posY),
-                    style = Stroke(width = 2.5f)
-                )
-
-                // Hot pink core target
-                drawCircle(
-                    color = NeonPink,
-                    radius = 8f,
-                    center = Offset(posX, posY)
-                )
-
-                // White laser center
-                drawCircle(
-                    color = Color.White,
-                    radius = 3.5f,
-                    center = Offset(posX, posY)
-                )
-            }
-        }
-
-        // Empty state overlay
-        if (instructionSet == null && executionState is ExecutionState.Idle) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "AWAITING AI DRAWING BLUEPRINT\nSELECT A PRESET OR ENTER PROMPT",
-                    color = TextMuted.copy(alpha = 0.6f),
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Medium,
-                    lineHeight = 18.sp,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
-        }
-    }
 }
 
-private fun DrawScope.drawCyberGrid(w: Float, h: Float) {
-    val step = 36f
+private fun DrawScope.drawBlueprintGrid(w: Float, h: Float) {
+    val step = 40f
     var x = step
     while (x < w) {
         drawLine(
@@ -208,36 +246,35 @@ private fun DrawScope.drawCalibrationGuides(bounds: CalibrationBounds, w: Float,
 
     // Dashed bounding box
     drawRect(
-        color = NeonPink.copy(alpha = 0.6f),
+        color = NeonCyan.copy(alpha = 0.5f),
         topLeft = Offset(left, top),
         size = Size(width, height),
         style = Stroke(
-            width = 2f,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 8f))
+            width = 1.5f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f))
         )
     )
 
     // Corner targeting marks
-    val cornerLen = 16f
+    val cornerLen = 14f
     // Top-left
-    drawLine(NeonCyan, Offset(left, top), Offset(left + cornerLen, top), 3f)
-    drawLine(NeonCyan, Offset(left, top), Offset(left, top + cornerLen), 3f)
+    drawLine(NeonCyan, Offset(left, top), Offset(left + cornerLen, top), 2.5f)
+    drawLine(NeonCyan, Offset(left, top), Offset(left, top + cornerLen), 2.5f)
     // Top-right
-    drawLine(NeonCyan, Offset(left + width, top), Offset(left + width - cornerLen, top), 3f)
-    drawLine(NeonCyan, Offset(left + width, top), Offset(left + width, top + cornerLen), 3f)
+    drawLine(NeonCyan, Offset(left + width, top), Offset(left + width - cornerLen, top), 2.5f)
+    drawLine(NeonCyan, Offset(left + width, top), Offset(left + width, top + cornerLen), 2.5f)
     // Bottom-left
-    drawLine(NeonCyan, Offset(left, top + height), Offset(left + cornerLen, top + height), 3f)
-    drawLine(NeonCyan, Offset(left, top + height), Offset(left, top + height - cornerLen), 3f)
+    drawLine(NeonCyan, Offset(left, top + height), Offset(left + cornerLen, top + height), 2.5f)
+    drawLine(NeonCyan, Offset(left, top + height), Offset(left + top + height, top + height), 2.5f)
     // Bottom-right
-    drawLine(NeonCyan, Offset(left + width, top + height), Offset(left + width - cornerLen, top + height), 3f)
-    drawLine(NeonCyan, Offset(left + width, top + height), Offset(left + width, top + height - cornerLen), 3f)
+    drawLine(NeonCyan, Offset(left + width, top + height), Offset(left + width - cornerLen, top + height), 2.5f)
+    drawLine(NeonCyan, Offset(left + width, top + height), Offset(left + width, top + height - cornerLen), 2.5f)
 }
 
-private fun DrawScope.drawNeonStroke(
+private fun DrawScope.drawCleanStroke(
     stroke: DrawingStroke,
     canvasW: Float,
     canvasH: Float,
-    glowAlpha: Float,
     maxPointsToDraw: Int
 ) {
     if (stroke.points.size < 2) return
@@ -261,45 +298,23 @@ private fun DrawScope.drawNeonStroke(
         path.close()
     }
 
-    // Outer Neon Glow Layer
+    // Subtle soft background stroke for anti-aliasing depth
     drawPath(
         path = path,
-        color = strokeColor.copy(alpha = 0.25f * glowAlpha),
+        color = strokeColor.copy(alpha = 0.2f),
         style = Stroke(
-            width = stroke.strokeWidth * 3.5f,
+            width = stroke.strokeWidth + 2f,
             cap = StrokeCap.Round,
             join = StrokeJoin.Round
         )
     )
 
-    // Mid Glow Aura
-    drawPath(
-        path = path,
-        color = strokeColor.copy(alpha = 0.6f * glowAlpha),
-        style = Stroke(
-            width = stroke.strokeWidth * 1.8f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
-        )
-    )
-
-    // Sharp Core Vector
+    // Solid clean vector stroke
     drawPath(
         path = path,
         color = strokeColor,
         style = Stroke(
             width = stroke.strokeWidth,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
-        )
-    )
-
-    // Center Hot White Core for cyber vibrancy
-    drawPath(
-        path = path,
-        color = Color.White.copy(alpha = 0.8f),
-        style = Stroke(
-            width = (stroke.strokeWidth * 0.35f).coerceAtLeast(1f),
             cap = StrokeCap.Round,
             join = StrokeJoin.Round
         )

@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Key
@@ -29,7 +28,6 @@ import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -37,6 +35,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,23 +48,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.model.AiModelOption
 import com.example.ui.theme.BorderGlass
 import com.example.ui.theme.CardBackground
 import com.example.ui.theme.CardBackgroundElevated
 import com.example.ui.theme.CyberBackground
-import com.example.ui.theme.CyberBlack
 import com.example.ui.theme.NeonCyan
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonPurple
 import com.example.ui.theme.NeonYellow
+import com.example.ui.theme.TextCyan
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
 import com.example.ui.viewmodel.PuterAuthViewModel
@@ -90,11 +85,11 @@ fun PuterAuthSheet(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(24.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp), spotColor = NeonCyan)
-            .border(1.5.dp, BorderGlass, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .shadow(16.dp, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            .border(1.dp, BorderGlass, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
             .testTag("puter_auth_sheet"),
         color = CyberBackground,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
         Column(
             modifier = Modifier
@@ -108,27 +103,34 @@ fun PuterAuthSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(if (authState.isSignedIn) NeonGreen else if (isSdkReady) NeonCyan else NeonYellow)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.Default.Key,
-                        contentDescription = null,
-                        tint = NeonCyan,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "PUTER.JS AUTH & AI HUB",
-                        color = TextWhite,
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = (if (authState.isSignedIn) NeonGreen else if (isSdkReady) NeonCyan else NeonYellow).copy(alpha = 0.15f),
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Key,
+                                contentDescription = null,
+                                tint = if (authState.isSignedIn) NeonGreen else if (isSdkReady) NeonCyan else NeonYellow,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "AI Services & Authentication",
+                            color = TextWhite,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = if (authState.isSignedIn) "Authenticated via Puter.js" else "Standard mode active",
+                            color = TextMuted,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
 
                 IconButton(
@@ -143,7 +145,7 @@ fun PuterAuthSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // ACCOUNT AUTHENTICATION CARD
             Card(
@@ -151,15 +153,15 @@ fun PuterAuthSheet(
                     .fillMaxWidth()
                     .border(
                         width = 1.dp,
-                        color = if (authState.isSignedIn) NeonGreen.copy(alpha = 0.6f) else NeonPink.copy(alpha = 0.6f),
-                        shape = RoundedCornerShape(16.dp)
+                        color = if (authState.isSignedIn) NeonGreen.copy(alpha = 0.5f) else BorderGlass,
+                        shape = RoundedCornerShape(14.dp)
                     ),
                 colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -168,35 +170,32 @@ fun PuterAuthSheet(
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = null,
-                                tint = if (authState.isSignedIn) NeonGreen else NeonPink,
-                                modifier = Modifier.size(24.dp)
+                                tint = if (authState.isSignedIn) NeonGreen else TextMuted,
+                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (authState.isSignedIn) "@${authState.username ?: "User"}" else "Guest Mode",
+                                text = if (authState.isSignedIn) "@${authState.username ?: "User"}" else "Standard / Guest",
                                 color = TextWhite,
-                                fontSize = 15.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
 
                         Text(
                             text = authState.statusMessage,
                             color = TextMuted,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace
+                            style = MaterialTheme.typography.bodySmall
                         )
 
                         if (!authState.isSignedIn) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Sign in to Puter.js to unlock unlimited cloud LLM tokens & GPT-4o.",
-                                color = NeonCyan,
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace
+                                text = "Sign in to Puter.js for additional LLM providers and quota.",
+                                color = TextCyan,
+                                fontSize = 11.sp
                             )
                         }
                     }
@@ -205,41 +204,41 @@ fun PuterAuthSheet(
 
                     if (isLoading) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(28.dp),
+                            modifier = Modifier.size(24.dp),
                             color = NeonCyan,
                             strokeWidth = 2.dp
                         )
                     } else if (authState.isSignedIn) {
                         OutlinedButton(
                             onClick = { viewModel.signOut() },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonPink),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink.copy(alpha = 0.5f)),
                             modifier = Modifier.testTag("puter_sign_out_btn")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Logout,
                                 contentDescription = null,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("SIGN OUT", fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            Text("Sign Out", fontSize = 12.sp)
                         }
                     } else {
                         Button(
                             onClick = { viewModel.signIn() },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
                             modifier = Modifier.testTag("puter_sign_in_btn")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Login,
                                 contentDescription = null,
-                                tint = CyberBlack,
-                                modifier = Modifier.size(16.dp)
+                                tint = TextWhite,
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("SIGN IN", color = CyberBlack, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                            Text("Sign In", color = TextWhite, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -248,10 +247,9 @@ fun PuterAuthSheet(
             if (authError != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "⚠️ $authError",
+                    text = "Notice: $authError",
                     color = NeonPink,
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontSize = 12.sp
                 )
             }
 
@@ -265,16 +263,15 @@ fun PuterAuthSheet(
                 Icon(
                     imageVector = Icons.Default.Psychology,
                     contentDescription = null,
-                    tint = NeonYellow,
+                    tint = NeonCyan,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "AVAILABLE AI MODELS (${filteredModels.size})",
+                    text = "Available Models (${filteredModels.size})",
                     color = TextWhite,
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -285,7 +282,7 @@ fun PuterAuthSheet(
                 value = searchQuery,
                 onValueChange = { viewModel.setSearchQuery(it) },
                 placeholder = {
-                    Text("Search models (Claude, GPT-4o, Gemini...)", color = TextMuted, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                    Text("Search models (Claude, GPT-4o, Gemini...)", color = TextMuted, fontSize = 12.sp)
                 },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
@@ -306,7 +303,7 @@ fun PuterAuthSheet(
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
@@ -323,29 +320,28 @@ fun PuterAuthSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
-                    null to "ALL",
-                    "Anthropic" to "ANTHROPIC",
-                    "Google" to "GOOGLE",
-                    "OpenAI" to "OPENAI",
-                    "DeepSeek" to "DEEPSEEK",
-                    "Puter.js" to "LOCAL/NATIVE"
+                    null to "All",
+                    "Anthropic" to "Anthropic",
+                    "Google" to "Google",
+                    "OpenAI" to "OpenAI",
+                    "DeepSeek" to "DeepSeek",
+                    "Puter.js" to "Native"
                 ).forEach { (prov, label) ->
                     val isSelected = providerFilter == prov
-                    Box(
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isSelected) NeonCyan.copy(alpha = 0.15f) else CardBackground,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) NeonCyan else BorderGlass),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (isSelected) NeonCyan.copy(alpha = 0.25f) else CardBackground)
-                            .border(1.dp, if (isSelected) NeonCyan else BorderGlass, RoundedCornerShape(10.dp))
                             .clickable { viewModel.setProviderFilter(prov) }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
                             .testTag("provider_filter_${label.lowercase()}")
                     ) {
                         Text(
                             text = label,
                             color = if (isSelected) NeonCyan else TextMuted,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         )
                     }
                 }
@@ -358,7 +354,7 @@ fun PuterAuthSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
+                    .height(260.dp)
                     .testTag("puter_models_list")
             ) {
                 items(filteredModels, key = { it.id }) { model ->
@@ -369,7 +365,7 @@ fun PuterAuthSheet(
                             .border(
                                 width = if (isSelected) 1.5.dp else 1.dp,
                                 color = if (isSelected) NeonCyan else BorderGlass,
-                                shape = RoundedCornerShape(14.dp)
+                                shape = RoundedCornerShape(12.dp)
                             )
                             .clickable { viewModel.selectModel(model.id) }
                             .testTag("model_item_${model.id}"),
@@ -389,35 +385,21 @@ fun PuterAuthSheet(
                                     Text(
                                         text = model.name,
                                         color = TextWhite,
-                                        fontSize = 13.sp,
-                                        fontFamily = FontFamily.Monospace,
-                                        fontWeight = FontWeight.Bold
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(
-                                                when (model.badge) {
-                                                    "RECOMMENDED" -> NeonCyan.copy(alpha = 0.2f)
-                                                    "FASTEST" -> NeonGreen.copy(alpha = 0.2f)
-                                                    "AUTH UNLOCKED" -> NeonPink.copy(alpha = 0.2f)
-                                                    else -> NeonPurple.copy(alpha = 0.2f)
-                                                }
-                                            )
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = NeonCyan.copy(alpha = 0.12f),
+                                        border = androidx.compose.foundation.BorderStroke(0.5.dp, NeonCyan.copy(alpha = 0.3f))
                                     ) {
                                         Text(
                                             text = model.badge,
-                                            color = when (model.badge) {
-                                                "RECOMMENDED" -> NeonCyan
-                                                "FASTEST" -> NeonGreen
-                                                "AUTH UNLOCKED" -> NeonPink
-                                                else -> NeonPurple
-                                            },
+                                            color = NeonCyan,
                                             fontSize = 9.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Medium,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                         )
                                     }
                                 }
@@ -425,39 +407,39 @@ fun PuterAuthSheet(
                                 Spacer(modifier = Modifier.height(2.dp))
 
                                 Text(
-                                    text = "Provider: ${model.provider} • ${model.description}",
+                                    text = "${model.provider} • ${model.description}",
                                     color = TextMuted,
-                                    fontSize = 10.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    lineHeight = 14.sp
+                                    style = MaterialTheme.typography.bodySmall,
+                                    lineHeight = 15.sp
                                 )
                             }
 
                             Spacer(modifier = Modifier.width(10.dp))
 
                             if (isSelected) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(28.dp)
-                                        .clip(CircleShape)
-                                        .background(NeonCyan),
-                                    contentAlignment = Alignment.Center
+                                Surface(
+                                    shape = CircleShape,
+                                    color = NeonCyan,
+                                    modifier = Modifier.size(26.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = "Selected",
-                                        tint = CyberBlack,
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Selected",
+                                            tint = TextWhite,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             } else {
                                 OutlinedButton(
                                     onClick = { viewModel.selectModel(model.id) },
-                                    shape = RoundedCornerShape(10.dp),
+                                    shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonCyan),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass)
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                                 ) {
-                                    Text("SELECT", fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                                    Text("Select", fontSize = 11.sp)
                                 }
                             }
                         }
@@ -465,14 +447,13 @@ fun PuterAuthSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Footer Log Status
             Text(
-                text = "LOG: $lastLog",
+                text = "Status: $lastLog",
                 color = TextMuted,
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace
+                fontSize = 11.sp
             )
         }
     }

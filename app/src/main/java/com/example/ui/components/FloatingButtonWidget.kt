@@ -26,20 +26,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.model.ExecutionState
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CyberBlack
+import com.example.ui.theme.BorderGlass
+import com.example.ui.theme.CardBackgroundElevated
 import com.example.ui.theme.NeonCyan
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.NeonPink
 import com.example.ui.theme.NeonYellow
+import com.example.ui.theme.TextWhite
 
 /**
- * 56dp floating circular action button with animated pulsing neon ring.
+ * 56dp floating action button with formal subtle status ring indicator.
  */
 @Composable
 fun FloatingButtonWidget(
@@ -48,23 +48,24 @@ fun FloatingButtonWidget(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDrawing = executionState is ExecutionState.Drawing
     val infiniteTransition = rememberInfiniteTransition(label = "ring_pulse")
 
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1.0f,
-        targetValue = 1.25f,
+        targetValue = if (isDrawing) 1.25f else 1.1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1100, easing = FastOutSlowInEasing),
+            animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse_scale"
     )
 
     val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
-        targetValue = 0.15f,
+        initialValue = 0.5f,
+        targetValue = 0.1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1100, easing = FastOutSlowInEasing),
+            animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse_alpha"
@@ -84,39 +85,32 @@ fun FloatingButtonWidget(
             .testTag("floating_bubble_container"),
         contentAlignment = Alignment.Center
     ) {
-        // Outer pulsing neon aura ring
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .scale(pulseScale)
-                .clip(CircleShape)
-                .border(2.dp, activeGlowColor.copy(alpha = pulseAlpha), CircleShape)
-        )
+        // Status pulse indicator ring
+        if (isDrawing || executionState is ExecutionState.Generating) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .border(2.dp, activeGlowColor.copy(alpha = pulseAlpha), CircleShape)
+            )
+        }
 
         // Main 56dp floating bubble button
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .shadow(elevation = 12.dp, shape = CircleShape, spotColor = activeGlowColor)
+                .shadow(elevation = 10.dp, shape = CircleShape)
                 .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            CardBackground,
-                            CyberBlack
-                        )
-                    )
-                )
+                .background(if (isExpanded) NeonCyan else CardBackgroundElevated)
                 .border(
-                    width = 2.dp,
-                    brush = Brush.linearGradient(
-                        colors = listOf(activeGlowColor, NeonCyan)
-                    ),
+                    width = 1.5.dp,
+                    color = if (isExpanded) NeonCyan else BorderGlass,
                     shape = CircleShape
                 )
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(bounded = true, color = activeGlowColor),
+                    indication = ripple(bounded = true, color = NeonCyan),
                     onClick = onClick
                 )
                 .testTag("floating_bubble_btn"),
@@ -127,14 +121,14 @@ fun FloatingButtonWidget(
                     imageVector = Icons.Default.Stop,
                     contentDescription = "Stop Drawing",
                     tint = NeonPink,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.Brush,
-                    contentDescription = "ArtHax Floating Assistant",
-                    tint = if (isExpanded) NeonPink else NeonCyan,
-                    modifier = Modifier.size(26.dp)
+                    contentDescription = "Art Assistant Floating Action",
+                    tint = if (isExpanded) TextWhite else NeonCyan,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
