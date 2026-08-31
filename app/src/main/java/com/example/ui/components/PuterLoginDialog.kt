@@ -62,28 +62,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.CyberBackground
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
-import com.example.ui.theme.TextCyan
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Minimalist WebView Login Dialog for Puter.js authentication.
+ * Minimalist WebView Login Dialog for Puter.js authentication in Neo-Precision aesthetic.
  * Listens for login events via JS injection & URL interception,
  * and automatically triggers live model fetching upon successful login.
  */
@@ -102,7 +104,7 @@ fun PuterLoginDialog(
     var webViewInstance by remember { mutableStateOf<WebView?>(null) }
     var pageLoadingProgress by remember { mutableFloatStateOf(0f) }
     var isLoading by remember { mutableStateOf(true) }
-    var statusText by remember { mutableStateOf("Loading Puter.js authentication...") }
+    var statusText by remember { mutableStateOf("Initializing neural auth pipeline...") }
     var loginDetected by remember { mutableStateOf(false) }
 
     Dialog(
@@ -119,10 +121,10 @@ fun PuterLoginDialog(
             modifier = modifier
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.88f)
-                .border(1.5.dp, if (loginDetected) NeonGreen else NeonCyan, RoundedCornerShape(20.dp))
+                .border(1.dp, if (loginDetected) SignalEmerald.copy(alpha = 0.6f) else HairlineAmber, RoundedCornerShape(10.dp))
                 .testTag("puter_login_dialog_card"),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = CyberBackground)
+            shape = RoundedCornerShape(10.dp),
+            colors = CardDefaults.cardColors(containerColor = ObsidianBlack)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
@@ -131,7 +133,7 @@ fun PuterLoginDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(CardBackgroundElevated)
+                        .background(MatteCarbon)
                         .padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -141,16 +143,17 @@ fun PuterLoginDialog(
                         modifier = Modifier.weight(1f)
                     ) {
                         Surface(
-                            shape = CircleShape,
-                            color = (if (loginDetected) NeonGreen else NeonCyan).copy(alpha = 0.15f),
-                            modifier = Modifier.size(34.dp)
+                            shape = RoundedCornerShape(4.dp),
+                            color = (if (loginDetected) SignalEmerald else TungstenAmber).copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (loginDetected) SignalEmerald.copy(alpha = 0.3f) else HairlineAmber),
+                            modifier = Modifier.size(32.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = if (loginDetected) Icons.Default.CheckCircle else Icons.Default.VpnKey,
                                     contentDescription = null,
-                                    tint = if (loginDetected) NeonGreen else NeonCyan,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = if (loginDetected) SignalEmerald else TungstenAmber,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
@@ -158,20 +161,23 @@ fun PuterLoginDialog(
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Puter.js Sign In",
+                                    text = "PUTER.JS AUTH CONSOLE",
                                     color = TextWhite,
+                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 12.sp
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = (if (loginDetected) NeonGreen else NeonCyan).copy(alpha = 0.2f)
+                                    shape = RoundedCornerShape(3.dp),
+                                    color = (if (loginDetected) SignalEmerald else TungstenAmber).copy(alpha = 0.2f),
+                                    border = androidx.compose.foundation.BorderStroke(0.5.dp, if (loginDetected) SignalEmerald.copy(alpha = 0.4f) else HairlineAmber)
                                 ) {
                                     Text(
-                                        text = if (loginDetected) "SUCCESS" else "Puter.ai",
-                                        color = if (loginDetected) NeonGreen else NeonCyan,
-                                        fontSize = 9.sp,
+                                        text = if (loginDetected) "VERIFIED" else "OAUTH2",
+                                        color = if (loginDetected) SignalEmerald else TungstenAmber,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                     )
@@ -179,7 +185,7 @@ fun PuterLoginDialog(
                             }
                             Text(
                                 text = statusText,
-                                color = if (loginDetected) NeonGreen else TextMuted,
+                                color = if (loginDetected) SignalEmerald else TextMuted,
                                 fontSize = 11.sp,
                                 maxLines = 1
                             )
@@ -198,7 +204,7 @@ fun PuterLoginDialog(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Refresh",
                                 tint = TextMuted,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
@@ -210,7 +216,7 @@ fun PuterLoginDialog(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
                                 tint = TextMuted,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
@@ -221,11 +227,11 @@ fun PuterLoginDialog(
                     LinearProgressIndicator(
                         progress = { pageLoadingProgress },
                         modifier = Modifier.fillMaxWidth().height(2.dp),
-                        color = NeonCyan,
-                        trackColor = BorderGlass
+                        color = TungstenAmber,
+                        trackColor = HairlineBorder
                     )
                 } else {
-                    Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                 }
 
                 // 2. EMBEDDED MINIMALIST WEBVIEW
@@ -277,7 +283,7 @@ fun PuterLoginDialog(
                                     override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                         pageLoadingProgress = newProgress / 100f
                                         if (newProgress >= 90) {
-                                            isLoading = false
+                                             isLoading = false
                                         }
                                     }
                                 }
@@ -354,13 +360,13 @@ fun PuterLoginDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(CardBackground)
+                        .background(MatteCarbon)
                         .padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Sign in to fetch live models & high-res vector quota",
+                        text = "Sign in unlocks live high-res vector quota & multi-model synthesis",
                         color = TextMuted,
                         fontSize = 11.sp,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
@@ -394,16 +400,20 @@ fun PuterLoginDialog(
                                 null
                             )
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
-                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TungstenAmber,
+                            contentColor = ObsidianBlack
+                        ),
+                        shape = RoundedCornerShape(6.dp),
                         modifier = Modifier.height(34.dp).testTag("verify_login_btn")
                     ) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = TextWhite, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = ObsidianBlack, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Verify Sign In", color = TextWhite, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("VERIFY SIGN IN", color = ObsidianBlack, fontFamily = FontFamily.Monospace, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
     }
 }
+

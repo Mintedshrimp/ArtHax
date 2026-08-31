@@ -13,6 +13,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Stop
@@ -30,16 +31,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.model.ExecutionState
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.LaserCrimson
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 
 /**
- * 56dp floating action button with formal subtle status ring indicator.
+ * 56dp Neo-Precision floating instrument orb with laser telemetry indicator rings.
  */
 @Composable
 fun FloatingButtonWidget(
@@ -53,7 +59,7 @@ fun FloatingButtonWidget(
 
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1.0f,
-        targetValue = if (isDrawing) 1.25f else 1.1f,
+        targetValue = if (isDrawing) 1.25f else 1.12f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -62,7 +68,7 @@ fun FloatingButtonWidget(
     )
 
     val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.5f,
+        initialValue = 0.6f,
         targetValue = 0.1f,
         animationSpec = infiniteRepeatable(
             animation = tween(1200, easing = FastOutSlowInEasing),
@@ -72,11 +78,11 @@ fun FloatingButtonWidget(
     )
 
     val activeGlowColor = when (executionState) {
-        is ExecutionState.Drawing -> NeonPink
-        is ExecutionState.Generating -> NeonYellow
-        is ExecutionState.Completed -> NeonGreen
-        is ExecutionState.Error -> NeonPink
-        else -> NeonCyan
+        is ExecutionState.Drawing -> LaserCrimson
+        is ExecutionState.Generating -> TungstenAmber
+        is ExecutionState.Completed -> SignalEmerald
+        is ExecutionState.Error -> LaserCrimson
+        else -> TungstenAmber
     }
 
     Box(
@@ -92,25 +98,25 @@ fun FloatingButtonWidget(
                     .size(56.dp)
                     .scale(pulseScale)
                     .clip(CircleShape)
-                    .border(2.dp, activeGlowColor.copy(alpha = pulseAlpha), CircleShape)
+                    .border(1.5.dp, activeGlowColor.copy(alpha = pulseAlpha), CircleShape)
             )
         }
 
-        // Main 56dp floating bubble button
+        // Main 56dp Neo-Precision floating instrument orb
         Box(
             modifier = Modifier
-                .size(56.dp)
-                .shadow(elevation = 10.dp, shape = CircleShape)
-                .clip(CircleShape)
-                .background(if (isExpanded) NeonCyan else CardBackgroundElevated)
+                .size(54.dp)
+                .shadow(elevation = 12.dp, shape = RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .background(if (isExpanded) TungstenAmber else CarbonElevated)
                 .border(
-                    width = 1.5.dp,
-                    color = if (isExpanded) NeonCyan else BorderGlass,
-                    shape = CircleShape
+                    width = 1.dp,
+                    color = if (isExpanded) TungstenAmber else if (isDrawing) LaserCrimson else HairlineCobalt,
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(bounded = true, color = NeonCyan),
+                    indication = ripple(bounded = true, color = TungstenAmber),
                     onClick = onClick
                 )
                 .testTag("floating_bubble_btn"),
@@ -120,17 +126,18 @@ fun FloatingButtonWidget(
                 Icon(
                     imageVector = Icons.Default.Stop,
                     contentDescription = "Stop Drawing",
-                    tint = NeonPink,
+                    tint = LaserCrimson,
                     modifier = Modifier.size(24.dp)
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.Brush,
                     contentDescription = "Art Assistant Floating Action",
-                    tint = if (isExpanded) TextWhite else NeonCyan,
-                    modifier = Modifier.size(24.dp)
+                    tint = if (isExpanded) ObsidianBlack else TungstenAmber,
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
     }
 }
+

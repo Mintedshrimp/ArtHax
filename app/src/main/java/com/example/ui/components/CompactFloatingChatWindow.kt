@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -65,20 +66,21 @@ import com.example.model.AiModelOption
 import com.example.model.ChatMessage
 import com.example.model.ChatSender
 import com.example.model.ExecutionState
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.CyberBlack
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
-import com.example.ui.theme.TextCyan
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 
 /**
- * Compact, modern floating chat window component for interacting with the AI assistant.
+ * Compact Neo-Precision floating chat window component for interacting with the AI assistant.
  * Offers floating overlay capabilities, AI prompt input, model quick-select, and direct stroke triggering.
  */
 @Composable
@@ -109,12 +111,12 @@ fun CompactFloatingChatWindow(
 
     Surface(
         modifier = modifier
-            .width(350.dp)
-            .shadow(12.dp, RoundedCornerShape(16.dp))
-            .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp))
+            .width(360.dp)
+            .shadow(16.dp, RoundedCornerShape(12.dp))
+            .border(1.dp, HairlineBorder, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
             .testTag("compact_floating_chat_window"),
-        color = CardBackgroundElevated
+        color = CarbonElevated
     ) {
         Column(
             modifier = Modifier
@@ -127,32 +129,35 @@ fun CompactFloatingChatWindow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(CardBackground)
+                    .background(MatteCarbon)
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        shape = CircleShape,
-                        color = NeonCyan.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(4.dp),
+                        color = TungstenAmber.copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HairlineAmber),
                         modifier = Modifier.size(24.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.SmartToy,
                                 contentDescription = "AI Assistant",
-                                tint = NeonCyan,
+                                tint = TungstenAmber,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "AI Drawing Assistant",
+                        text = "SYNTHESIS CONSOLE",
                         color = TextWhite,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
                     )
                 }
 
@@ -216,22 +221,23 @@ fun CompactFloatingChatWindow(
                             val isSelected = model.id == selectedModelId
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) NeonCyan.copy(alpha = 0.15f) else CardBackground)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSelected) TungstenAmber.copy(alpha = 0.15f) else MatteCarbon)
                                     .border(
                                         width = 1.dp,
-                                        color = if (isSelected) NeonCyan else BorderGlass,
-                                        shape = RoundedCornerShape(8.dp)
+                                        color = if (isSelected) HairlineAmber else HairlineBorder,
+                                        shape = RoundedCornerShape(6.dp)
                                     )
                                     .clickable { onSelectModel(model.id) }
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                                     .testTag("chat_model_chip_${model.id}")
                             ) {
                                 Text(
-                                    text = model.name,
-                                    color = if (isSelected) NeonCyan else TextMuted,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                    text = model.name.uppercase(),
+                                    color = if (isSelected) TungstenAmber else TextMuted,
+                                    fontSize = 10.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         }
@@ -244,9 +250,9 @@ fun CompactFloatingChatWindow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 120.dp, max = 220.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(CardBackground)
-                            .border(1.dp, BorderGlass, RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MatteCarbon)
+                            .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                             .padding(10.dp)
                     ) {
                         if (messages.isEmpty()) {
@@ -259,14 +265,14 @@ fun CompactFloatingChatWindow(
                                 Icon(
                                     imageVector = Icons.Default.AutoAwesome,
                                     contentDescription = null,
-                                    tint = NeonCyan.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(24.dp)
+                                    tint = TungstenAmber.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(22.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Ask the AI assistant to draw any object, scene, or character. Vector strokes will generate automatically.",
+                                    text = "Synthesize vector strokes with neural models. Prompt any scene, diagram, or blueprint.",
                                     color = TextMuted,
-                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 11.sp,
                                     lineHeight = 16.sp
                                 )
                             }
@@ -295,14 +301,15 @@ fun CompactFloatingChatWindow(
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(12.dp),
-                                color = NeonCyan,
+                                color = TungstenAmber,
                                 strokeWidth = 1.5.dp
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = executionState.message,
-                                color = NeonCyan,
-                                fontSize = 11.sp
+                                color = TungstenAmber,
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace
                             )
                         }
                     }
@@ -319,16 +326,16 @@ fun CompactFloatingChatWindow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
-                            "Cute Kitten",
-                            "Mountain Sunrise",
-                            "Coffee Cup",
-                            "Origami Crane",
-                            "Cherry Blossom"
+                            "Minimal Cat",
+                            "Mountain Skyline",
+                            "Coffee Chemex",
+                            "Origami Bird",
+                            "Architectural Cube"
                         ).forEach { quickPrompt ->
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = CardBackground,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                                shape = RoundedCornerShape(6.dp),
+                                color = MatteCarbon,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, HairlineBorder),
                                 modifier = Modifier
                                     .clickable {
                                         onPromptChange(quickPrompt)
@@ -360,7 +367,7 @@ fun CompactFloatingChatWindow(
                             onValueChange = onPromptChange,
                             placeholder = {
                                 Text(
-                                    text = "Ask AI to draw something...",
+                                    text = "Enter synthesis prompt...",
                                     color = TextMuted,
                                     fontSize = 12.sp
                                 )
@@ -374,17 +381,18 @@ fun CompactFloatingChatWindow(
                                 }
                             }),
                             colors = TextFieldDefaults.colors(
-                                focusedContainerColor = CardBackground,
-                                unfocusedContainerColor = CardBackground,
-                                focusedIndicatorColor = NeonCyan,
-                                unfocusedIndicatorColor = BorderGlass,
+                                focusedContainerColor = MatteCarbon,
+                                unfocusedContainerColor = MatteCarbon,
+                                focusedIndicatorColor = TungstenAmber,
+                                unfocusedIndicatorColor = Color.Transparent,
                                 focusedTextColor = TextWhite,
                                 unfocusedTextColor = TextWhite
                             ),
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp)
+                                .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                                 .testTag("chat_prompt_input")
                         )
 
@@ -398,10 +406,11 @@ fun CompactFloatingChatWindow(
                                 }
                             },
                             enabled = currentPrompt.isNotBlank() && executionState !is ExecutionState.Generating,
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = NeonCyan,
-                                disabledContainerColor = CardBackground
+                                containerColor = TungstenAmber,
+                                contentColor = ObsidianBlack,
+                                disabledContainerColor = MatteCarbon
                             ),
                             modifier = Modifier
                                 .size(48.dp)
@@ -410,7 +419,7 @@ fun CompactFloatingChatWindow(
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Send Prompt",
-                                tint = TextWhite,
+                                tint = if (currentPrompt.isNotBlank() && executionState !is ExecutionState.Generating) ObsidianBlack else TextMuted,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -428,8 +437,8 @@ private fun ChatMessageBubble(
 ) {
     val isUser = message.sender == ChatSender.USER
     val alignment = if (isUser) Alignment.End else Alignment.Start
-    val bgColor = if (isUser) NeonCyan.copy(alpha = 0.15f) else CardBackground
-    val borderColor = if (isUser) NeonCyan.copy(alpha = 0.4f) else BorderGlass
+    val bgColor = if (isUser) TungstenAmber.copy(alpha = 0.12f) else CarbonInteractive
+    val borderColor = if (isUser) HairlineAmber else HairlineBorder
     val textColor = TextWhite
 
     Column(
@@ -438,10 +447,10 @@ private fun ChatMessageBubble(
     ) {
         Surface(
             shape = RoundedCornerShape(
-                topStart = 12.dp,
-                topEnd = 12.dp,
-                bottomStart = if (isUser) 12.dp else 2.dp,
-                bottomEnd = if (isUser) 2.dp else 12.dp
+                topStart = 8.dp,
+                topEnd = 8.dp,
+                bottomStart = if (isUser) 8.dp else 2.dp,
+                bottomEnd = if (isUser) 2.dp else 8.dp
             ),
             color = bgColor,
             border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
@@ -449,10 +458,11 @@ private fun ChatMessageBubble(
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                 if (message.modelName != null) {
                     Text(
-                        text = message.modelName,
-                        color = TextCyan,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = message.modelName.uppercase(),
+                        color = TungstenAmber,
+                        fontSize = 9.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                 }
@@ -469,23 +479,27 @@ private fun ChatMessageBubble(
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = onExecuteDrawing,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
+                        shape = RoundedCornerShape(6.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TungstenAmber,
+                            contentColor = ObsidianBlack
+                        ),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                         modifier = Modifier.testTag("chat_msg_draw_now_btn")
                     ) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = null,
-                            tint = TextWhite,
+                            tint = ObsidianBlack,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Draw ${message.instructionSet.strokes.size} Strokes",
-                            color = TextWhite,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
+                            text = "EXECUTE ${message.instructionSet.strokes.size} STROKES",
+                            color = ObsidianBlack,
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -493,4 +507,5 @@ private fun ChatMessageBubble(
         }
     }
 }
+
 

@@ -74,18 +74,19 @@ import com.example.model.PuterAuthState
 import com.example.ui.components.PuterAuthSheet
 import com.example.ui.components.PuterLoginDialog
 import com.example.ui.components.SettingsBottomSheet
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.CyberBackground
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonPurple
-import com.example.ui.theme.NeonYellow
-import com.example.ui.theme.TextCyan
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.LaserCrimson
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 import com.example.ui.viewmodel.MainViewModel
 import com.example.ui.viewmodel.PuterAuthViewModel
 
@@ -133,10 +134,10 @@ fun MainScreen(
     Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .background(CyberBackground)
+            .background(ObsidianBlack)
             .statusBarsPadding()
             .navigationBarsPadding(),
-        containerColor = CyberBackground
+        containerColor = ObsidianBlack
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -148,7 +149,7 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
-            // 1. TOP APP BAR (Minimalist with Top-Right Settings)
+            // 1. TOP APP BAR (Neo-Precision Monolithic Header)
             // ==========================================
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,43 +158,63 @@ fun MainScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = NeonCyan.copy(alpha = 0.15f),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.4f)),
-                        modifier = Modifier.size(40.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        color = CarbonElevated,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, HairlineCobalt),
+                        modifier = Modifier.size(42.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Brush,
                                 contentDescription = null,
-                                tint = NeonCyan,
-                                modifier = Modifier.size(22.dp)
+                                tint = TungstenAmber,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
-                            text = "ArtHax AI",
-                            color = TextWhite,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "ARTHAX",
+                                color = TextWhite,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = TungstenAmber.copy(alpha = 0.15f),
+                                border = androidx.compose.foundation.BorderStroke(0.5.dp, HairlineAmber)
+                            ) {
+                                Text(
+                                    text = "PRECISION",
+                                    color = TungstenAmber,
+                                    fontSize = 9.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(7.dp)
+                                    .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(if (sdkReady) NeonGreen else NeonYellow)
+                                    .background(if (sdkReady) SignalEmerald else TungstenAmber)
                             )
-                            Spacer(modifier = Modifier.width(5.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = if (sdkReady) {
-                                    if (puterAuthState.isSignedIn) "Puter.js @${puterAuthState.username}" else "Puter.js AI Online"
-                                } else "Connecting Puter.js...",
-                                color = if (sdkReady) NeonGreen else NeonYellow,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium
+                                    if (puterAuthState.isSignedIn) "PUTER.JS // @${puterAuthState.username?.uppercase()}" else "PUTER.JS // ONLINE"
+                                } else "PUTER.JS // CONNECTING...",
+                                color = if (sdkReady) SignalEmerald else TungstenAmber,
+                                fontSize = 10.sp,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.4.sp
                             )
                         }
                     }
@@ -204,16 +225,16 @@ fun MainScreen(
                     onClick = { showSettingsSheet = true },
                     modifier = Modifier
                         .size(42.dp)
-                        .clip(CircleShape)
-                        .background(CardBackground)
-                        .border(1.dp, BorderGlass, CircleShape)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(CarbonElevated)
+                        .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                         .testTag("top_settings_btn")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
-                        tint = NeonCyan,
-                        modifier = Modifier.size(20.dp)
+                        tint = TextWhite,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
@@ -227,29 +248,30 @@ fun MainScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .border(
-                        width = 1.5.dp,
-                        color = if (overlayServiceRunning) NeonGreen.copy(alpha = pulseGlow) else if (allPermissionsReady) NeonCyan else BorderGlass,
-                        shape = RoundedCornerShape(20.dp)
+                        width = 1.dp,
+                        color = if (overlayServiceRunning) SignalEmerald.copy(alpha = pulseGlow) else if (allPermissionsReady) HairlineAmber else HairlineBorder,
+                        shape = RoundedCornerShape(12.dp)
                     )
                     .testTag("main_hero_card"),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Surface(
-                        shape = CircleShape,
-                        color = (if (overlayServiceRunning) NeonGreen else NeonCyan).copy(alpha = 0.15f),
-                        modifier = Modifier.size(60.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        color = CarbonElevated,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (overlayServiceRunning) SignalEmerald.copy(alpha = 0.4f) else HairlineCobalt),
+                        modifier = Modifier.size(56.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (overlayServiceRunning) Icons.Default.PlayArrow else Icons.Default.AutoAwesome,
                                 contentDescription = null,
-                                tint = if (overlayServiceRunning) NeonGreen else NeonCyan,
-                                modifier = Modifier.size(32.dp)
+                                tint = if (overlayServiceRunning) SignalEmerald else TungstenAmber,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }
@@ -257,19 +279,21 @@ fun MainScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
-                        text = if (overlayServiceRunning) "Draw Overlay is Active" else "AI Vector Assistant",
+                        text = if (overlayServiceRunning) "OVERLAY ENGINE ACTIVE" else "VECTOR SYNTHESIS ENGINE",
                         color = TextWhite,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        letterSpacing = 0.5.sp
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
                         text = if (overlayServiceRunning) {
-                            "Tap the floating bubble on screen to open chat or crop canvas in any paint app."
+                            "Precision overlay active. Tap the floating instrument on screen to open chat or calibrate canvas."
                         } else {
-                            "Draws AI prompts into any Android paint app (Ibis Paint, Sketchbook, Infinite Painter)."
+                            "Directly translates AI prompts into calibrated trajectory vectors across all Android paint applications."
                         },
                         color = TextMuted,
                         fontSize = 12.sp,
@@ -292,25 +316,27 @@ fun MainScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(48.dp)
                             .testTag("start_draw_overlay_btn"),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (overlayServiceRunning) NeonPink else NeonCyan
+                            containerColor = if (overlayServiceRunning) LaserCrimson else TungstenAmber
                         )
                     ) {
                         Icon(
                             imageVector = if (overlayServiceRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
                             contentDescription = null,
-                            tint = TextWhite,
-                            modifier = Modifier.size(20.dp)
+                            tint = if (overlayServiceRunning) TextWhite else ObsidianBlack,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (overlayServiceRunning) "Stop Draw Overlay" else if (!allPermissionsReady) "Grant Permissions to Start" else "Start Draw Overlay",
-                            color = TextWhite,
+                            text = if (overlayServiceRunning) "TERMINATE OVERLAY" else if (!allPermissionsReady) "INITIALIZE PERMISSIONS" else "START DRAW OVERLAY",
+                            color = if (overlayServiceRunning) TextWhite else ObsidianBlack,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.6.sp
                         )
                     }
                 }
@@ -319,14 +345,27 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ==========================================
-            // 3. REQUIRED PERMISSIONS (Minimalist Cards)
+            // 3. REQUIRED PERMISSIONS (Neo-Precision Telemetry Cards)
             // ==========================================
-            Text(
-                text = "Required Setup",
-                color = TextWhite,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "SYSTEM PERMISSIONS",
+                    color = TextMuted,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    letterSpacing = 0.8.sp
+                )
+                Text(
+                    text = if (allPermissionsReady) "[STATUS: ALL GREEN]" else "[STATUS: PENDING]",
+                    color = if (allPermissionsReady) SignalEmerald else TungstenAmber,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -334,10 +373,10 @@ fun MainScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(14.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(10.dp))
                     .testTag("permission_overlay_card"),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = CarbonElevated)
             ) {
                 Row(
                     modifier = Modifier
@@ -351,30 +390,41 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = (if (overlayGranted) NeonGreen else NeonCyan).copy(alpha = 0.15f),
-                            modifier = Modifier.size(36.dp)
+                            shape = RoundedCornerShape(6.dp),
+                            color = (if (overlayGranted) SignalEmerald else CobaltBeam).copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (overlayGranted) SignalEmerald.copy(alpha = 0.3f) else HairlineCobalt),
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.Layers,
                                     contentDescription = null,
-                                    tint = if (overlayGranted) NeonGreen else NeonCyan,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = if (overlayGranted) SignalEmerald else CobaltBeam,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Overlay Window",
+                                    color = TextWhite,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (overlayGranted) "[ACTIVE]" else "[REQUIRED]",
+                                    color = if (overlayGranted) SignalEmerald else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = "Overlay Window",
-                                color = TextWhite,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                text = if (overlayGranted) "Granted — bubble overlay enabled" else "Display floating bubble over paint apps",
-                                color = if (overlayGranted) NeonGreen else TextMuted,
+                                text = if (overlayGranted) "Floating instrument rendering enabled" else "Required to display floating hub over canvases",
+                                color = if (overlayGranted) SignalEmerald else TextMuted,
                                 fontSize = 11.sp
                             )
                         }
@@ -382,26 +432,27 @@ fun MainScreen(
 
                     if (overlayGranted) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = NeonGreen.copy(alpha = 0.15f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = SignalEmerald.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, SignalEmerald.copy(alpha = 0.3f))
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NeonGreen, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Ready", color = NeonGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
+                            Text(
+                                text = "READY",
+                                color = SignalEmerald,
+                                fontSize = 10.sp,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
                         }
                     } else {
                         Button(
                             onClick = { viewModel.openOverlaySettings() },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
-                            modifier = Modifier.height(34.dp).testTag("grant_overlay_btn")
+                            shape = RoundedCornerShape(6.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = CobaltBeam),
+                            modifier = Modifier.height(32.dp).testTag("grant_overlay_btn")
                         ) {
-                            Text("Grant", color = TextWhite, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("GRANT", color = TextWhite, fontSize = 10.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -413,10 +464,10 @@ fun MainScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(14.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(10.dp))
                     .testTag("permission_accessibility_card"),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = CarbonElevated)
             ) {
                 Row(
                     modifier = Modifier
@@ -430,30 +481,41 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = (if (accessibilityEnabled) NeonGreen else NeonPink).copy(alpha = 0.15f),
-                            modifier = Modifier.size(36.dp)
+                            shape = RoundedCornerShape(6.dp),
+                            color = (if (accessibilityEnabled) SignalEmerald else TungstenAmber).copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (accessibilityEnabled) SignalEmerald.copy(alpha = 0.3f) else HairlineAmber),
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.TouchApp,
                                     contentDescription = null,
-                                    tint = if (accessibilityEnabled) NeonGreen else NeonPink,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = if (accessibilityEnabled) SignalEmerald else TungstenAmber,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Touch Injection Service",
+                                    color = TextWhite,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (accessibilityEnabled) "[ACTIVE]" else "[REQUIRED]",
+                                    color = if (accessibilityEnabled) SignalEmerald else TungstenAmber,
+                                    fontSize = 9.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = "Drawing Service",
-                                color = TextWhite,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                text = if (accessibilityEnabled) "Enabled — automated drawing ready" else "Required to draw strokes in paint apps",
-                                color = if (accessibilityEnabled) NeonGreen else TextMuted,
+                                text = if (accessibilityEnabled) "Gesture trajectory engine ready" else "Required to automate stylus & touch strokes",
+                                color = if (accessibilityEnabled) SignalEmerald else TextMuted,
                                 fontSize = 11.sp
                             )
                         }
@@ -461,26 +523,27 @@ fun MainScreen(
 
                     if (accessibilityEnabled) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = NeonGreen.copy(alpha = 0.15f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = SignalEmerald.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, SignalEmerald.copy(alpha = 0.3f))
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = NeonGreen, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Ready", color = NeonGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
+                            Text(
+                                text = "READY",
+                                color = SignalEmerald,
+                                fontSize = 10.sp,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
                         }
                     } else {
                         Button(
                             onClick = { viewModel.openAccessibilitySettings() },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
-                            modifier = Modifier.height(34.dp).testTag("enable_accessibility_btn")
+                            shape = RoundedCornerShape(6.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = TungstenAmber),
+                            modifier = Modifier.height(32.dp).testTag("enable_accessibility_btn")
                         ) {
-                            Text("Enable", color = TextWhite, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("ENABLE", color = ObsidianBlack, fontSize = 10.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -488,14 +551,14 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // PUTER.JS AUTH CARD (Minimalist)
+            // PUTER.JS AUTH CARD (Minimalist Neo-Precision)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(14.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(10.dp))
                     .testTag("main_puter_auth_card"),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackgroundElevated)
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(containerColor = CarbonElevated)
             ) {
                 Row(
                     modifier = Modifier
@@ -509,30 +572,41 @@ fun MainScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = NeonCyan.copy(alpha = 0.15f),
-                            modifier = Modifier.size(36.dp)
+                            shape = RoundedCornerShape(6.dp),
+                            color = CobaltBeam.copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, HairlineCobalt),
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Default.AccountCircle,
                                     contentDescription = null,
-                                    tint = NeonCyan,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = CobaltBeam,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (puterAuthState.isSignedIn) "@${puterAuthState.username ?: "User"}" else "Puter.js AI Engine",
+                                    color = TextWhite,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 13.sp
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (puterAuthState.isSignedIn) "[AUTHENTICATED]" else "[FREE TIER]",
+                                    color = if (puterAuthState.isSignedIn) SignalEmerald else TungstenAmber,
+                                    fontSize = 9.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = if (puterAuthState.isSignedIn) "Puter @${puterAuthState.username ?: "User"}" else "Puter.js AI (Free Mode)",
-                                color = TextWhite,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                text = if (puterAuthState.isSignedIn) "Full account access unlocked" else "Claude, Gemini, DeepSeek free tier",
-                                color = if (puterAuthState.isSignedIn) NeonGreen else TextMuted,
+                                text = if (puterAuthState.isSignedIn) "Full model quota unlocked" else "Claude 3.5, Gemini 1.5, DeepSeek free access",
+                                color = if (puterAuthState.isSignedIn) SignalEmerald else TextMuted,
                                 fontSize = 11.sp
                             )
                         }
@@ -540,26 +614,28 @@ fun MainScreen(
 
                     if (puterAuthState.isSignedIn) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = NeonGreen.copy(alpha = 0.15f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = SignalEmerald.copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, SignalEmerald.copy(alpha = 0.3f))
                         ) {
                             Text(
                                 text = "LOGGED IN",
-                                color = NeonGreen,
+                                color = SignalEmerald,
                                 fontSize = 10.sp,
+                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     } else {
                         OutlinedButton(
                             onClick = { showPuterLoginDialog = true },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonCyan),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.5f)),
-                            modifier = Modifier.height(34.dp).testTag("main_login_btn")
+                            shape = RoundedCornerShape(6.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = CobaltBeam),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, HairlineCobalt),
+                            modifier = Modifier.height(32.dp).testTag("main_login_btn")
                         ) {
-                            Text("Log In", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                            Text("LOG IN", fontSize = 10.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -568,13 +644,14 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 4. STEP-BY-STEP USER GUIDE
+            // 4. STEP-BY-STEP USER GUIDE (Industrial Workflow Matrix)
             // ==========================================
             Text(
-                text = "How to Draw in Paint Apps",
-                color = TextWhite,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
+                text = "EXECUTION WORKFLOW",
+                color = TextMuted,
+                style = MaterialTheme.typography.labelMedium,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                letterSpacing = 0.8.sp
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -582,33 +659,33 @@ fun MainScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp)),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     GuideStepItem(
-                        stepNumber = "1",
-                        title = "Start the Draw Overlay",
-                        description = "Grant overlay & accessibility permissions above, then tap 'Start Draw Overlay'."
+                        stepNumber = "01",
+                        title = "INITIALIZE OVERLAY",
+                        description = "Enable system permissions above and launch the overlay instrument."
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     GuideStepItem(
-                        stepNumber = "2",
-                        title = "Open Your Paint App",
-                        description = "Switch to Ibis Paint X, Autodesk Sketchbook, Infinite Painter, or Notes."
+                        stepNumber = "02",
+                        title = "OPEN TARGET APPLICATION",
+                        description = "Launch Ibis Paint X, Autodesk Sketchbook, Infinite Painter, or Notes."
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     GuideStepItem(
-                        stepNumber = "3",
-                        title = "Tap Floating Bubble -> 'Canvas' (Top Right)",
-                        description = "Press the floating bubble, then tap 'Canvas' at top right to drag & resize the crop box over your canvas area."
+                        stepNumber = "03",
+                        title = "CALIBRATE BOUNDARIES",
+                        description = "Tap the floating instrument -> 'Crop Canvas' to align the precision viewfinder."
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     GuideStepItem(
-                        stepNumber = "4",
-                        title = "Prompt AI & Draw",
-                        description = "Pick a free AI model, type your prompt (e.g. 'Chibi Miku'), and AI will draw vector strokes directly onto your screen!"
+                        stepNumber = "04",
+                        title = "SYNTHESIZE & DISPATCH",
+                        description = "Prompt the model (e.g. 'Cyber Katana') to synthesize and execute native screen strokes."
                     )
                 }
             }
@@ -670,16 +747,17 @@ private fun GuideStepItem(
         verticalAlignment = Alignment.Top
     ) {
         Surface(
-            shape = CircleShape,
-            color = NeonCyan.copy(alpha = 0.15f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.3f)),
-            modifier = Modifier.size(24.dp)
+            shape = RoundedCornerShape(4.dp),
+            color = CarbonElevated,
+            border = androidx.compose.foundation.BorderStroke(1.dp, HairlineAmber),
+            modifier = Modifier.size(26.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = stepNumber,
-                    color = NeonCyan,
+                    color = TungstenAmber,
                     fontSize = 11.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -689,15 +767,17 @@ private fun GuideStepItem(
             Text(
                 text = title,
                 color = TextWhite,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold
+                fontSize = 12.sp,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.4.sp
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
                 color = TextMuted,
                 fontSize = 11.sp,
-                lineHeight = 15.sp
+                lineHeight = 16.sp
             )
         }
     }

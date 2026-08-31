@@ -56,6 +56,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -66,20 +67,22 @@ import com.example.model.DrawingSettings
 import com.example.model.ExecutionState
 import com.example.model.PuterAuthState
 import com.example.model.SekaiPreset
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.CyberBackground
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
-import com.example.ui.theme.TextCyan
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.LaserCrimson
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 
 /**
- * Clean floating HUD controller for the Overlay Assistant.
+ * Neo-Precision HUD instrument controller for the Overlay Assistant.
  * Provides AI prompt box, model picker, one-tap canvas crop toggle, presets, and drawing execution controls.
  */
 @Composable
@@ -112,12 +115,12 @@ fun OverlayHudSheet(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(16.dp, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            .border(1.dp, BorderGlass, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            .shadow(16.dp, shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .border(1.dp, HairlineBorder, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .animateContentSize()
             .testTag("overlay_hud_surface"),
-        color = CyberBackground
+        color = CarbonElevated
     ) {
         Column(
             modifier = Modifier
@@ -134,15 +137,16 @@ fun OverlayHudSheet(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        shape = CircleShape,
-                        color = (if (executionState is ExecutionState.Drawing) NeonPink else NeonCyan).copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(4.dp),
+                        color = (if (executionState is ExecutionState.Drawing) LaserCrimson else TungstenAmber).copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (executionState is ExecutionState.Drawing) LaserCrimson.copy(alpha = 0.4f) else HairlineAmber),
                         modifier = Modifier.size(28.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Psychology,
                                 contentDescription = null,
-                                tint = if (executionState is ExecutionState.Drawing) NeonPink else NeonCyan,
+                                tint = if (executionState is ExecutionState.Drawing) LaserCrimson else TungstenAmber,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -150,25 +154,28 @@ fun OverlayHudSheet(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = "Art Assistant Floating Hub",
+                            text = "SYNTHESIS CONTROLLER",
                             color = TextWhite,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(if (isPuterSdkReady) NeonGreen else NeonYellow)
+                                    .background(if (isPuterSdkReady) SignalEmerald else TungstenAmber)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = if (isPuterSdkReady) {
-                                    if (puterAuthState?.isSignedIn == true) "@${puterAuthState.username ?: "User"} (Auth)" else "Puter.js AI Online"
-                                } else "Initializing Puter.js...",
-                                color = if (isPuterSdkReady) NeonGreen else NeonYellow,
-                                fontSize = 10.sp
+                                    if (puterAuthState?.isSignedIn == true) "@${puterAuthState.username ?: "USER"} (LINKED)" else "PUTER.JS ENGINE ONLINE"
+                                } else "INITIALIZING ENGINE...",
+                                color = if (isPuterSdkReady) SignalEmerald else TungstenAmber,
+                                fontSize = 9.sp,
+                                fontFamily = FontFamily.Monospace
                             )
                         }
                     }
@@ -206,15 +213,15 @@ fun OverlayHudSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("AI Generating Strokes...", color = NeonCyan, fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                        Text(executionState.message, color = TextMuted, fontSize = 11.sp)
+                        Text("SYNTHESIZING STROKES...", color = TungstenAmber, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                        Text(executionState.message, color = TextMuted, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     LinearProgressIndicator(
                         progress = { executionState.progress },
-                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                        color = NeonCyan,
-                        trackColor = CardBackground
+                        modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)),
+                        color = TungstenAmber,
+                        trackColor = MatteCarbon
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
@@ -224,15 +231,15 @@ fun OverlayHudSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Drawing Stroke ${executionState.currentStrokeIndex} of ${executionState.totalStrokes}", color = NeonGreen, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                        Text("${(executionState.progress * 100).toInt()}%", color = NeonGreen, fontSize = 11.sp)
+                        Text("EXECUTING STROKE ${executionState.currentStrokeIndex} / ${executionState.totalStrokes}", color = SignalEmerald, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                        Text("${(executionState.progress * 100).toInt()}%", color = SignalEmerald, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     LinearProgressIndicator(
                         progress = { executionState.progress },
-                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                        color = NeonGreen,
-                        trackColor = CardBackground
+                        modifier = Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)),
+                        color = SignalEmerald,
+                        trackColor = MatteCarbon
                     )
                 }
                 Spacer(modifier = Modifier.height(6.dp))
@@ -243,17 +250,17 @@ fun OverlayHudSheet(
                 value = prompt,
                 onValueChange = onPromptChange,
                 placeholder = {
-                    Text("Enter prompt to draw (e.g., Chibi Miku, Cyber Katana...)", color = TextMuted, fontSize = 12.sp)
+                    Text("Enter prompt to synthesize strokes...", color = TextMuted, fontSize = 12.sp)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, BorderGlass, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                     .testTag("overlay_prompt_input"),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = CardBackground,
-                    unfocusedContainerColor = CardBackground,
-                    focusedIndicatorColor = NeonCyan,
+                    focusedContainerColor = MatteCarbon,
+                    unfocusedContainerColor = MatteCarbon,
+                    focusedIndicatorColor = TungstenAmber,
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedTextColor = TextWhite,
                     unfocusedTextColor = TextWhite
@@ -275,14 +282,14 @@ fun OverlayHudSheet(
                         if (executionState is ExecutionState.Generating) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
-                                color = NeonCyan,
+                                color = TungstenAmber,
                                 strokeWidth = 2.dp
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = "Generate",
-                                tint = NeonCyan,
+                                tint = TungstenAmber,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -300,14 +307,14 @@ fun OverlayHudSheet(
                 // TOGGLE CANVAS CROP BUTTON
                 OutlinedButton(
                     onClick = onToggleCalibrationMode,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (isCalibrationMode) NeonCyan.copy(alpha = 0.15f) else CardBackgroundElevated,
-                        contentColor = if (isCalibrationMode) NeonCyan else TextWhite
+                        containerColor = if (isCalibrationMode) TungstenAmber.copy(alpha = 0.15f) else MatteCarbon,
+                        contentColor = if (isCalibrationMode) TungstenAmber else TextWhite
                     ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
-                        if (isCalibrationMode) NeonCyan else BorderGlass
+                        if (isCalibrationMode) HairlineAmber else HairlineBorder
                     ),
                     modifier = Modifier
                         .weight(1f)
@@ -317,14 +324,15 @@ fun OverlayHudSheet(
                     Icon(
                         imageVector = Icons.Default.Crop,
                         contentDescription = null,
-                        tint = if (isCalibrationMode) NeonCyan else TextCyan,
+                        tint = if (isCalibrationMode) TungstenAmber else TextWhite,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isCalibrationMode) "Done Crop" else "Crop Canvas",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = if (isCalibrationMode) "LOCK VIEW" else "CROP CANVAS",
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -336,16 +344,20 @@ fun OverlayHudSheet(
                             .weight(1.2f)
                             .height(44.dp)
                             .testTag("overlay_abort_btn"),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonPink)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = LaserCrimson,
+                            contentColor = TextWhite
+                        )
                     ) {
                         Icon(Icons.Default.Stop, contentDescription = null, tint = TextWhite, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Stop Drawing",
+                            text = "STOP DRAWING",
                             color = TextWhite,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
                         )
                     }
                 } else {
@@ -362,23 +374,25 @@ fun OverlayHudSheet(
                             .weight(1.2f)
                             .height(44.dp)
                             .testTag("overlay_execute_btn"),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (hasStrokes) NeonCyan else CardBackgroundElevated
+                            containerColor = if (hasStrokes) TungstenAmber else MatteCarbon,
+                            contentColor = if (hasStrokes) ObsidianBlack else TextWhite
                         )
                     ) {
                         Icon(
                             imageVector = if (hasStrokes) Icons.Default.PlayArrow else Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = if (hasStrokes) TextWhite else NeonCyan,
+                            tint = if (hasStrokes) ObsidianBlack else TungstenAmber,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (hasStrokes) "Draw (${instructionSet?.strokes?.size} Strokes)" else "Generate & Preview",
-                            color = if (hasStrokes) TextWhite else NeonCyan,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp
+                            text = if (hasStrokes) "DRAW (${instructionSet?.strokes?.size} STROKES)" else "SYNTHESIZE",
+                            color = if (hasStrokes) ObsidianBlack else TungstenAmber,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
                         )
                     }
                 }
@@ -395,10 +409,11 @@ fun OverlayHudSheet(
                 ) {
                     // AI Model Selector Chips
                     Text(
-                        text = "AI Model Provider",
+                        text = "NEURAL MODEL PROVIDER",
                         color = TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -411,11 +426,11 @@ fun OverlayHudSheet(
                         availableModels.forEach { model ->
                             val isSelected = selectedModel == model.id
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = if (isSelected) NeonCyan.copy(alpha = 0.15f) else CardBackground,
+                                shape = RoundedCornerShape(6.dp),
+                                color = if (isSelected) TungstenAmber.copy(alpha = 0.15f) else MatteCarbon,
                                 border = androidx.compose.foundation.BorderStroke(
                                     1.dp,
-                                    if (isSelected) NeonCyan else BorderGlass
+                                    if (isSelected) HairlineAmber else HairlineBorder
                                 ),
                                 modifier = Modifier
                                     .clickable { onModelSelect(model.id) }
@@ -426,17 +441,19 @@ fun OverlayHudSheet(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = model.name,
-                                        color = if (isSelected) NeonCyan else TextWhite,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                        text = model.name.uppercase(),
+                                        color = if (isSelected) TungstenAmber else TextWhite,
+                                        fontSize = 10.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = if (model.isFree) "FREE" else model.badge,
-                                        color = if (model.isFree) NeonGreen else TextMuted,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Medium
+                                        text = if (model.isFree) "FREE" else model.badge.uppercase(),
+                                        color = if (model.isFree) SignalEmerald else TextMuted,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }
@@ -447,10 +464,11 @@ fun OverlayHudSheet(
 
                     // One-Tap Presets
                     Text(
-                        text = "Instant Drawing Presets",
+                        text = "QUICK BLUEPRINT PRESETS",
                         color = TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -462,9 +480,9 @@ fun OverlayHudSheet(
                     ) {
                         presets.forEach { preset ->
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = CardBackground,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                                shape = RoundedCornerShape(6.dp),
+                                color = MatteCarbon,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, HairlineBorder),
                                 modifier = Modifier
                                     .clickable { onSelectPreset(preset) }
                                     .testTag("preset_${preset.id}")
@@ -473,7 +491,7 @@ fun OverlayHudSheet(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(preset.previewIcon, fontSize = 14.sp)
+                                    Text(preset.previewIcon, fontSize = 13.sp)
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column {
                                         Text(
@@ -483,9 +501,10 @@ fun OverlayHudSheet(
                                             fontWeight = FontWeight.Medium
                                         )
                                         Text(
-                                            text = "${preset.strokeCountApprox} strokes",
+                                            text = "${preset.strokeCountApprox} STROKES",
                                             color = TextMuted,
-                                            fontSize = 9.sp
+                                            fontSize = 8.sp,
+                                            fontFamily = FontFamily.Monospace
                                         )
                                     }
                                 }
@@ -502,31 +521,34 @@ fun OverlayHudSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(imageVector = Icons.Default.Speed, contentDescription = null, tint = TungstenAmber, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Drawing Speed (${settings.executionProfile.displayName})",
+                                text = "STROKE RATE (${settings.executionProfile.displayName.uppercase()})",
                                 color = TextMuted,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
                             text = "${String.format("%.1fx", settings.speedMultiplier)}",
-                            color = NeonCyan,
+                            color = TungstenAmber,
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
                         )
                     }
+
                     Slider(
                         value = settings.speedMultiplier,
                         onValueChange = { onUpdateSettings(settings.copy(speedMultiplier = it)) },
                         valueRange = 0.5f..5.0f,
                         steps = 8,
                         colors = SliderDefaults.colors(
-                            thumbColor = NeonCyan,
-                            activeTrackColor = NeonCyan,
-                            inactiveTrackColor = CardBackground
+                            thumbColor = TungstenAmber,
+                            activeTrackColor = TungstenAmber,
+                            inactiveTrackColor = MatteCarbon
                         ),
                         modifier = Modifier.testTag("speed_slider")
                     )
@@ -535,10 +557,11 @@ fun OverlayHudSheet(
 
                     // PEN TYPE BUBBLES
                     Text(
-                        text = "Pen Style / Brush",
+                        text = "INSTRUMENT EMULATION",
                         color = TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -551,17 +574,18 @@ fun OverlayHudSheet(
                         com.example.model.PenType.values().forEach { pen ->
                             val isSel = settings.penType == pen
                             Surface(
-                                shape = CircleShape,
-                                color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackground,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                shape = RoundedCornerShape(4.dp),
+                                color = if (isSel) TungstenAmber.copy(alpha = 0.2f) else MatteCarbon,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) HairlineAmber else HairlineBorder),
                                 modifier = Modifier.clickable { onUpdateSettings(settings.copy(penType = pen)) }
                             ) {
                                 Text(
-                                    text = pen.displayName,
-                                    color = if (isSel) TextWhite else TextMuted,
-                                    fontSize = 10.sp,
+                                    text = pen.displayName.uppercase(),
+                                    color = if (isSel) TungstenAmber else TextMuted,
+                                    fontSize = 9.sp,
+                                    fontFamily = FontFamily.Monospace,
                                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
                         }
@@ -577,13 +601,14 @@ fun OverlayHudSheet(
                     ) {
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Text(
-                                text = "Ghost Tracing (Light Table AR)",
-                                color = if (settings.ghostTracingMode) NeonCyan else TextWhite,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
+                                text = "GHOST TRACING (AR LIGHT TABLE)",
+                                color = if (settings.ghostTracingMode) TungstenAmber else TextWhite,
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Overlay blueprint for manual tracing",
+                                text = "Project stroke blueprint for manual tracing",
                                 color = TextMuted,
                                 fontSize = 10.sp
                             )
@@ -592,8 +617,8 @@ fun OverlayHudSheet(
                             checked = settings.ghostTracingMode,
                             onCheckedChange = { onUpdateSettings(settings.copy(ghostTracingMode = it)) },
                             colors = androidx.compose.material3.SwitchDefaults.colors(
-                                checkedThumbColor = NeonCyan,
-                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = TungstenAmber
                             )
                         )
                     }
@@ -602,3 +627,4 @@ fun OverlayHudSheet(
         }
     }
 }
+

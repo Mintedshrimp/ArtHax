@@ -10,24 +10,24 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val ArtHaxColorScheme = darkColorScheme(
-    primary = NeonCyan,
-    onPrimary = TextWhite,
-    primaryContainer = CardBackgroundElevated,
+    primary = TungstenAmber,
+    onPrimary = ObsidianBlack,
+    primaryContainer = CarbonInteractive,
     onPrimaryContainer = TextWhite,
-    secondary = NeonPink,
+    secondary = CobaltBeam,
     onSecondary = TextWhite,
-    secondaryContainer = CardBackground,
+    secondaryContainer = CarbonElevated,
     onSecondaryContainer = TextWhite,
-    tertiary = NeonGreen,
-    onTertiary = TextWhite,
-    background = CyberBackground,
+    tertiary = SignalEmerald,
+    onTertiary = ObsidianBlack,
+    background = ObsidianBlack,
     onBackground = TextWhite,
-    surface = CardBackground,
+    surface = MatteCarbon,
     onSurface = TextWhite,
-    surfaceVariant = CardBackgroundElevated,
+    surfaceVariant = CarbonElevated,
     onSurfaceVariant = TextMuted,
-    outline = BorderGlass,
-    outlineVariant = GridLine
+    outline = HairlineBorder,
+    outlineVariant = PrecisionGrid
 )
 
 @Composable

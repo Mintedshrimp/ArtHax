@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -54,22 +55,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.DrawingSettings
 import com.example.model.PuterAuthState
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.CyberBackground
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
-import com.example.ui.theme.TextCyan
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.LaserCrimson
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 
 /**
  * Settings bottom sheet accessed via the top-right Settings icon.
@@ -91,7 +95,7 @@ fun SettingsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = CyberBackground,
+        containerColor = CarbonElevated,
         dragHandle = null,
         modifier = modifier.testTag("settings_bottom_sheet")
     ) {
@@ -111,27 +115,30 @@ fun SettingsBottomSheet(
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .clip(CircleShape)
-                            .background(NeonCyan.copy(alpha = 0.15f)),
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(TungstenAmber.copy(alpha = 0.15f))
+                            .border(1.dp, HairlineAmber, RoundedCornerShape(6.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Palette,
+                            imageVector = Icons.Default.Tune,
                             contentDescription = null,
-                            tint = NeonCyan,
-                            modifier = Modifier.size(20.dp)
+                            tint = TungstenAmber,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Settings & Account",
+                            text = "SYSTEM CONFIGURATION",
                             color = TextWhite,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 13.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
                         )
                         Text(
-                            text = "Configure Puter.js AI & drawing preferences",
+                            text = "Engine parameters & synthesis controls",
                             color = TextMuted,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -156,10 +163,10 @@ fun SettingsBottomSheet(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                     .testTag("settings_puter_auth_card"),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -171,28 +178,31 @@ fun SettingsBottomSheet(
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = null,
-                                tint = if (puterAuthState.isSignedIn) NeonGreen else NeonCyan,
-                                modifier = Modifier.size(22.dp)
+                                tint = if (puterAuthState.isSignedIn) SignalEmerald else TungstenAmber,
+                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Puter.js AI Account",
+                                text = "PUTER.JS NEURAL ENGINE",
                                 color = TextWhite,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
                             )
                         }
 
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = (if (puterAuthState.isSignedIn) NeonGreen else NeonYellow).copy(alpha = 0.15f)
+                            shape = RoundedCornerShape(4.dp),
+                            color = (if (puterAuthState.isSignedIn) SignalEmerald else TungstenAmber).copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (puterAuthState.isSignedIn) SignalEmerald.copy(alpha = 0.3f) else HairlineAmber)
                         ) {
                             Text(
-                                text = if (puterAuthState.isSignedIn) "LOGGED IN" else "ANONYMOUS / FREE",
-                                color = if (puterAuthState.isSignedIn) NeonGreen else NeonYellow,
-                                fontSize = 10.sp,
+                                text = if (puterAuthState.isSignedIn) "AUTHENTICATED" else "ANONYMOUS / FREE",
+                                color = if (puterAuthState.isSignedIn) SignalEmerald else TungstenAmber,
+                                fontSize = 9.sp,
+                                fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -201,9 +211,9 @@ fun SettingsBottomSheet(
 
                     Text(
                         text = if (puterAuthState.isSignedIn) {
-                            "Signed in as @${puterAuthState.username ?: "User"}. Full model tier access unlocked."
+                            "Authenticated as @${puterAuthState.username ?: "User"}. Full neural model access tier active."
                         } else {
-                            "Puter.js free tier is active. Log in to your Puter account for higher rate limits and saved session histories."
+                            "Free tier active. Sign in to your Puter account for higher rate limits and session backups."
                         },
                         color = TextMuted,
                         fontSize = 12.sp,
@@ -215,28 +225,31 @@ fun SettingsBottomSheet(
                     if (puterAuthState.isSignedIn) {
                         OutlinedButton(
                             onClick = onLogoutClick,
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(6.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = CardBackgroundElevated,
-                                contentColor = NeonPink
+                                containerColor = CarbonElevated,
+                                contentColor = LaserCrimson
                             ),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, NeonPink.copy(alpha = 0.4f)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, LaserCrimson.copy(alpha = 0.4f)),
                             modifier = Modifier.fillMaxWidth().testTag("settings_logout_btn")
                         ) {
                             Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Log Out of Puter.js", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            Text("DISCONNECT ACCOUNT", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     } else {
                         Button(
                             onClick = onLoginClick,
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
+                            shape = RoundedCornerShape(6.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = TungstenAmber,
+                                contentColor = ObsidianBlack
+                            ),
                             modifier = Modifier.fillMaxWidth().testTag("settings_login_btn")
                         ) {
-                            Icon(Icons.Default.Login, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Login, contentDescription = null, tint = ObsidianBlack, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Log In with Puter.js", color = TextWhite, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                            Text("CONNECT PUTER.JS", color = ObsidianBlack, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
                 }
@@ -248,18 +261,19 @@ fun SettingsBottomSheet(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                     .testTag("settings_drawing_card"),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     // Execution Profile (Cyber Turbo vs Organic Human)
                     Text(
-                        text = "DRAWING PERSONALITY & SPEED PROFILE",
+                        text = "EXECUTION TRAJECTORY PROFILE",
                         color = TextMuted,
+                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
+                        fontSize = 10.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -270,22 +284,23 @@ fun SettingsBottomSheet(
                         com.example.model.ExecutionProfile.values().forEach { profile ->
                             val isSel = settings.executionProfile == profile
                             Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSel) (if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) NeonPink.copy(alpha = 0.2f) else NeonGreen.copy(alpha = 0.2f)) else CardBackgroundElevated,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) (if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) NeonPink else NeonGreen) else BorderGlass),
+                                shape = RoundedCornerShape(6.dp),
+                                color = if (isSel) TungstenAmber.copy(alpha = 0.15f) else CarbonElevated,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) HairlineAmber else HairlineBorder),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onUpdateSettings(settings.copy(executionProfile = profile)) }
                             ) {
                                 Column(modifier = Modifier.padding(10.dp)) {
                                     Text(
-                                        text = profile.displayName,
-                                        color = if (isSel) TextWhite else TextMuted,
+                                        text = profile.displayName.uppercase(),
+                                        color = if (isSel) TungstenAmber else TextWhite,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp
+                                        fontSize = 11.sp
                                     )
                                     Text(
-                                        text = if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) "Machine 5ms Turbo" else "Natural Speedpaint Easing",
+                                        text = if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) "Machine 5ms Turbo" else "Speedpaint Natural Easing",
                                         color = TextMuted,
                                         fontSize = 10.sp
                                     )
@@ -295,15 +310,16 @@ fun SettingsBottomSheet(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // PEN TYPE BUBBLES
                     Text(
-                        text = "PEN TYPE / BRUSH STYLE",
+                        text = "INSTRUMENT EMULATION",
                         color = TextMuted,
+                        fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
+                        fontSize = 10.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -316,27 +332,28 @@ fun SettingsBottomSheet(
                         com.example.model.PenType.values().forEach { pen ->
                             val isSel = settings.penType == pen
                             Surface(
-                                shape = CircleShape,
-                                color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackgroundElevated,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                shape = RoundedCornerShape(4.dp),
+                                color = if (isSel) TungstenAmber.copy(alpha = 0.2f) else CarbonElevated,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) HairlineAmber else HairlineBorder),
                                 modifier = Modifier.clickable { onUpdateSettings(settings.copy(penType = pen)) }
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(8.dp)
+                                            .size(6.dp)
                                             .clip(CircleShape)
-                                            .background(if (isSel) NeonCyan else TextMuted)
+                                            .background(if (isSel) TungstenAmber else TextMuted)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = pen.displayName,
-                                        color = if (isSel) TextWhite else TextMuted,
+                                        text = pen.displayName.uppercase(),
+                                        color = if (isSel) TungstenAmber else TextMuted,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
-                                        fontSize = 11.sp
+                                        fontSize = 10.sp
                                     )
                                 }
                             }
@@ -352,24 +369,26 @@ fun SettingsBottomSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Stroke Thickness",
+                            text = "STROKE CALIBRATION",
                             color = TextWhite,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             com.example.model.ThicknessMode.values().forEach { mode ->
                                 val isSel = settings.thicknessMode == mode
                                 Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackgroundElevated,
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = if (isSel) TungstenAmber.copy(alpha = 0.2f) else CarbonElevated,
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) HairlineAmber else HairlineBorder),
                                     modifier = Modifier.clickable { onUpdateSettings(settings.copy(thicknessMode = mode)) }
                                 ) {
                                     Text(
-                                        text = mode.displayName,
-                                        color = if (isSel) NeonCyan else TextMuted,
-                                        fontSize = 10.sp,
+                                        text = mode.displayName.uppercase(),
+                                        color = if (isSel) TungstenAmber else TextMuted,
+                                        fontSize = 9.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                                     )
@@ -385,15 +404,15 @@ fun SettingsBottomSheet(
                             onValueChange = { onUpdateSettings(settings.copy(manualStrokeWidth = it)) },
                             valueRange = 1.0f..25.0f,
                             colors = SliderDefaults.colors(
-                                thumbColor = NeonCyan,
-                                activeTrackColor = NeonCyan,
-                                inactiveTrackColor = CardBackgroundElevated
+                                thumbColor = TungstenAmber,
+                                activeTrackColor = TungstenAmber,
+                                inactiveTrackColor = CarbonElevated
                             )
                         )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // GHOST TRACING MODE (HOLOGRAPHIC AR GUIDE)
@@ -405,20 +424,22 @@ fun SettingsBottomSheet(
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Ghost Tracing Mode (AR Guide)",
-                                    color = if (settings.ghostTracingMode) NeonCyan else TextWhite,
+                                    text = "Ghost Tracing Mode",
+                                    color = if (settings.ghostTracingMode) TungstenAmber else TextWhite,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = NeonCyan.copy(alpha = 0.15f)
+                                    color = TungstenAmber.copy(alpha = 0.15f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, HairlineAmber)
                                 ) {
                                     Text(
-                                        text = "Light Table",
-                                        color = NeonCyan,
-                                        fontSize = 9.sp,
+                                        text = "LIGHT TABLE",
+                                        color = TungstenAmber,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                     )
@@ -426,7 +447,7 @@ fun SettingsBottomSheet(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Projects semi-transparent glowing blueprints over paint apps so you can trace manually with your pen.",
+                                text = "Projects blueprint trajectories over canvas so you can trace manually with your stylus.",
                                 color = TextMuted,
                                 fontSize = 11.sp
                             )
@@ -436,14 +457,14 @@ fun SettingsBottomSheet(
                             checked = settings.ghostTracingMode,
                             onCheckedChange = { onUpdateSettings(settings.copy(ghostTracingMode = it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonCyan,
-                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = TungstenAmber
                             )
                         )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
@@ -455,23 +476,25 @@ fun SettingsBottomSheet(
                             Icon(
                                 imageVector = Icons.Default.Speed,
                                 contentDescription = null,
-                                tint = NeonCyan,
-                                modifier = Modifier.size(20.dp)
+                                tint = TungstenAmber,
+                                modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Drawing Speed",
+                                text = "TRAJECTORY SPEED",
                                 color = TextWhite,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
                             )
                         }
 
                         Text(
                             text = "${String.format("%.1fx", settings.speedMultiplier)}",
-                            color = NeonCyan,
+                            color = TungstenAmber,
+                            fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            fontSize = 12.sp
                         )
                     }
 
@@ -488,9 +511,9 @@ fun SettingsBottomSheet(
                         valueRange = 0.5f..5.0f,
                         steps = 8,
                         colors = SliderDefaults.colors(
-                            thumbColor = NeonCyan,
-                            activeTrackColor = NeonCyan,
-                            inactiveTrackColor = CardBackgroundElevated
+                            thumbColor = TungstenAmber,
+                            activeTrackColor = TungstenAmber,
+                            inactiveTrackColor = CarbonElevated
                         ),
                         modifier = Modifier.testTag("settings_speed_slider")
                     )
@@ -521,15 +544,15 @@ fun SettingsBottomSheet(
                             checked = settings.autoMinimizeOnExecute,
                             onCheckedChange = { onUpdateSettings(settings.copy(autoMinimizeOnExecute = it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonCyan,
-                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = TungstenAmber
                             ),
                             modifier = Modifier.testTag("settings_auto_minimize_switch")
                         )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Edge Hugging toggle for draggable floating bubble
@@ -541,20 +564,22 @@ fun SettingsBottomSheet(
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Floating Bubble Edge Hugging",
-                                    color = if (settings.edgeHugging) NeonCyan else TextWhite,
+                                    text = "Floating Instrument Edge Hugging",
+                                    color = if (settings.edgeHugging) TungstenAmber else TextWhite,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = NeonCyan.copy(alpha = 0.15f)
+                                    color = TungstenAmber.copy(alpha = 0.15f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, HairlineAmber)
                                 ) {
                                     Text(
-                                        text = "Smart Snap",
-                                        color = NeonCyan,
-                                        fontSize = 9.sp,
+                                        text = "SMART SNAP",
+                                        color = TungstenAmber,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                     )
@@ -562,7 +587,7 @@ fun SettingsBottomSheet(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "When released, the floating bubble smoothly snaps to the closest screen edge and stays there until moved.",
+                                text = "When released, the floating orb smoothly snaps to the closest screen edge and stays docked.",
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -573,8 +598,8 @@ fun SettingsBottomSheet(
                             checked = settings.edgeHugging,
                             onCheckedChange = { onUpdateSettings(settings.copy(edgeHugging = it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonCyan,
-                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = TungstenAmber
                             ),
                             modifier = Modifier.testTag("settings_edge_hugging_switch")
                         )
@@ -588,10 +613,10 @@ fun SettingsBottomSheet(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                     .testTag("settings_prompt_modes_card"),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -601,15 +626,16 @@ fun SettingsBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Security,
                             contentDescription = null,
-                            tint = NeonPink,
-                            modifier = Modifier.size(20.dp)
+                            tint = TungstenAmber,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "AI Prompt Modes & Filters",
+                            text = "NEURAL PROMPT POLICIES",
                             color = TextWhite,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
                         )
                     }
 
@@ -625,19 +651,21 @@ fun SettingsBottomSheet(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = "Unrestricted Mode",
-                                    color = if (settings.unrestrictedMode) NeonPink else TextWhite,
+                                    color = if (settings.unrestrictedMode) TungstenAmber else TextWhite,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = NeonPink.copy(alpha = 0.15f)
+                                    color = TungstenAmber.copy(alpha = 0.15f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, HairlineAmber)
                                 ) {
                                     Text(
-                                        text = "2D Horror / Devs",
-                                        color = NeonPink,
-                                        fontSize = 9.sp,
+                                        text = "GAME DEV / HORROR",
+                                        color = TungstenAmber,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                     )
@@ -645,7 +673,7 @@ fun SettingsBottomSheet(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Prompts won't be blocked. Designed for developers creating 2D horror games, dark monsters, gore, or gritty game assets without censorship.",
+                                text = "Optimized for developers creating 2D horror games, dark monsters, gore, and gritty game assets without aggressive prompt refusal.",
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -656,15 +684,15 @@ fun SettingsBottomSheet(
                             checked = settings.unrestrictedMode,
                             onCheckedChange = { onUpdateSettings(settings.copy(unrestrictedMode = it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonPink,
-                                checkedTrackColor = NeonPink.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = TungstenAmber
                             ),
                             modifier = Modifier.testTag("settings_unrestricted_mode_switch")
                         )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(HairlineBorder))
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Toggle 2: Copyright Bypass & Cleaner
@@ -676,20 +704,22 @@ fun SettingsBottomSheet(
                         Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Copyright Bypass",
-                                    color = if (settings.copyrightBypassMode) NeonYellow else TextWhite,
+                                    text = "Copyright Bypass Normalizer",
+                                    color = if (settings.copyrightBypassMode) CobaltBeam else TextWhite,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = NeonYellow.copy(alpha = 0.15f)
+                                    color = CobaltBeam.copy(alpha = 0.15f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, HairlineCobalt)
                                 ) {
                                     Text(
-                                        text = "Prompt Cleaner",
-                                        color = NeonYellow,
-                                        fontSize = 9.sp,
+                                        text = "PROMPT SANITIZER",
+                                        color = CobaltBeam,
+                                        fontSize = 8.sp,
+                                        fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                                     )
@@ -697,7 +727,7 @@ fun SettingsBottomSheet(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Bypasses copyright restrictions by veering prompt off to not contain copyright words, while AI cleans prompt to make similar artwork without copyright wording.",
+                                text = "Sanitizes prompts away from trademark keywords while directing the neural engine to synthesize matching aesthetics.",
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -708,8 +738,8 @@ fun SettingsBottomSheet(
                             checked = settings.copyrightBypassMode,
                             onCheckedChange = { onUpdateSettings(settings.copy(copyrightBypassMode = it)) },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonYellow,
-                                checkedTrackColor = NeonYellow.copy(alpha = 0.3f)
+                                checkedThumbColor = ObsidianBlack,
+                                checkedTrackColor = CobaltBeam
                             ),
                             modifier = Modifier.testTag("settings_copyright_bypass_switch")
                         )
@@ -723,32 +753,33 @@ fun SettingsBottomSheet(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+                    .border(1.dp, HairlineBorder, RoundedCornerShape(8.dp))
                     .testTag("settings_about_card"),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground)
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MatteCarbon)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = null,
-                            tint = TextCyan,
-                            modifier = Modifier.size(20.dp)
+                            tint = TungstenAmber,
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "About ArtHax AI",
+                            text = "ABOUT ARTHAX",
                             color = TextWhite,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp
                         )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "ArtHax transforms text prompts into vector drawing trajectories and dispatches native touch strokes directly onto your screen via Android Accessibility.\n\nWorks across all painting tools including Ibis Paint X, Infinite Painter, Autodesk Sketchbook, and Notes.",
+                        text = "ArtHax transforms text prompts into vector drawing trajectories and dispatches native touch strokes directly onto your canvas via Android Accessibility.\n\nEngineered for high compatibility with Ibis Paint X, Infinite Painter, Autodesk Sketchbook, and HiPaint.",
                         color = TextMuted,
                         fontSize = 12.sp,
                         lineHeight = 16.sp
@@ -760,8 +791,8 @@ fun SettingsBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Version 1.2.0 (Puter.js Engine)", color = TextMuted, fontSize = 11.sp)
-                        Text("Cyber Theme", color = NeonCyan, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                        Text("VERSION 1.2.0 (PUTER.JS)", color = TextMuted, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                        Text("NEO-PRECISION", color = TungstenAmber, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -770,3 +801,4 @@ fun SettingsBottomSheet(
         }
     }
 }
+

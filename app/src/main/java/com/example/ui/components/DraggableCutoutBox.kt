@@ -72,14 +72,18 @@ import androidx.compose.ui.unit.sp
 import com.example.model.ArtHaxInstructionSet
 import com.example.model.CalibrationBounds
 import com.example.model.ExecutionState
-import com.example.ui.theme.BorderGlass
-import com.example.ui.theme.CardBackgroundElevated
-import com.example.ui.theme.NeonCyan
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonPink
-import com.example.ui.theme.NeonYellow
+import com.example.ui.theme.CarbonElevated
+import com.example.ui.theme.CarbonInteractive
+import com.example.ui.theme.CobaltBeam
+import com.example.ui.theme.HairlineAmber
+import com.example.ui.theme.HairlineBorder
+import com.example.ui.theme.HairlineCobalt
+import com.example.ui.theme.MatteCarbon
+import com.example.ui.theme.ObsidianBlack
+import com.example.ui.theme.SignalEmerald
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextWhite
+import com.example.ui.theme.TungstenAmber
 import kotlin.math.roundToInt
 
 /**
@@ -151,32 +155,32 @@ fun DraggableCutoutBox(
             for (i in 1..2) {
                 // Vertical grid lines
                 drawLine(
-                    color = NeonCyan.copy(alpha = 0.15f),
+                    color = TungstenAmber.copy(alpha = 0.15f),
                     start = Offset(boxLeftPx + oneThirdW * i, boxTopPx),
                     end = Offset(boxLeftPx + oneThirdW * i, boxBottomPx),
                     strokeWidth = 1.dp.toPx()
                 )
                 // Horizontal grid lines
                 drawLine(
-                    color = NeonCyan.copy(alpha = 0.15f),
+                    color = TungstenAmber.copy(alpha = 0.15f),
                     start = Offset(boxLeftPx, boxTopPx + oneThirdH * i),
                     end = Offset(boxRightPx, boxTopPx + oneThirdH * i),
                     strokeWidth = 1.dp.toPx()
                 )
             }
 
-            // Draw Bounding Border with Neon Glow
+            // Draw Bounding Border with Precision Amber
             drawRect(
-                color = NeonCyan.copy(alpha = pulseAlpha),
+                color = TungstenAmber.copy(alpha = pulseAlpha),
                 topLeft = Offset(boxLeftPx, boxTopPx),
                 size = Size(boxWidthPx, boxHeightPx),
-                style = Stroke(width = 2.5.dp.toPx())
+                style = Stroke(width = 1.5.dp.toPx())
             )
 
             // Draw Corner Brackets (L-shapes)
-            val cornerLen = 22.dp.toPx().coerceAtMost(boxWidthPx / 3)
-            val cornerStroke = 3.5.dp.toPx()
-            val cornerColor = NeonCyan
+            val cornerLen = 20.dp.toPx().coerceAtMost(boxWidthPx / 3)
+            val cornerStroke = 2.5.dp.toPx()
+            val cornerColor = TungstenAmber
 
             // Top-Left
             drawLine(cornerColor, Offset(boxLeftPx, boxTopPx), Offset(boxLeftPx + cornerLen, boxTopPx), cornerStroke, StrokeCap.Square)
@@ -261,9 +265,9 @@ fun DraggableCutoutBox(
         ) {
             // Drag guide indicator
             Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = CardBackgroundElevated.copy(alpha = 0.85f),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+                shape = RoundedCornerShape(6.dp),
+                color = CarbonElevated.copy(alpha = 0.90f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, HairlineBorder),
                 modifier = Modifier.padding(8.dp)
             ) {
                 Row(
@@ -273,15 +277,16 @@ fun DraggableCutoutBox(
                     Icon(
                         imageVector = Icons.Default.OpenWith,
                         contentDescription = "Pan canvas",
-                        tint = NeonCyan,
-                        modifier = Modifier.size(15.dp)
+                        tint = TungstenAmber,
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(5.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${(boxWidthPx).roundToInt()} × ${(boxHeightPx).roundToInt()} px",
+                        text = "${(boxWidthPx).roundToInt()} × ${(boxHeightPx).roundToInt()} PX",
                         color = TextWhite,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 10.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -416,10 +421,10 @@ fun DraggableCutoutBox(
         Column(
             modifier = Modifier
                 .offset { IntOffset(boxLeftPx.coerceIn(12f, totalWidthPx - 340f).roundToInt(), actionBarY.roundToInt()) }
-                .shadow(14.dp, RoundedCornerShape(16.dp))
-                .clip(RoundedCornerShape(16.dp))
-                .background(CardBackgroundElevated)
-                .border(1.dp, BorderGlass, RoundedCornerShape(16.dp))
+                .shadow(16.dp, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
+                .background(CarbonElevated)
+                .border(1.dp, HairlineBorder, RoundedCornerShape(12.dp))
                 .padding(8.dp)
                 .testTag("cutout_action_bar")
         ) {
@@ -430,21 +435,28 @@ fun DraggableCutoutBox(
                 // START DRAWING BUTTON
                 Button(
                     onClick = onConfirmAndDraw,
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonCyan),
+                    shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TungstenAmber,
+                        contentColor = ObsidianBlack
+                    ),
                     modifier = Modifier.testTag("cutout_draw_now_btn")
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        tint = TextWhite,
+                        tint = ObsidianBlack,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Draw Here",
-                        color = TextWhite,
-                        fontSize = 12.sp,
+                        text = if (instructionSet != null && instructionSet.strokes.isNotEmpty())
+                            "DRAW ${instructionSet.strokes.size} STROKES"
+                        else
+                            "CALIBRATE",
+                        color = ObsidianBlack,
+                        fontSize = 11.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -459,7 +471,7 @@ fun DraggableCutoutBox(
                     Icon(
                         imageVector = Icons.Default.Tune,
                         contentDescription = "Fine-tune & Aspect Ratios",
-                        tint = if (showNudgeControls) NeonCyan else TextMuted,
+                        tint = if (showNudgeControls) TungstenAmber else TextMuted,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -596,16 +608,17 @@ private fun AspectRatioChip(
     onClick: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = CardBackgroundElevated,
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderGlass),
+        shape = RoundedCornerShape(4.dp),
+        color = MatteCarbon,
+        border = androidx.compose.foundation.BorderStroke(1.dp, HairlineBorder),
         modifier = Modifier.clickable { onClick() }
     ) {
         Text(
             text = label,
-            color = NeonCyan,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium,
+            color = TungstenAmber,
+            fontSize = 9.sp,
+            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
         )
     }
@@ -623,7 +636,7 @@ private fun NudgeButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = NeonCyan,
+            tint = TungstenAmber,
             modifier = Modifier.size(16.dp)
         )
     }
@@ -646,12 +659,12 @@ private fun EdgeResizeBar(
             },
         contentAlignment = Alignment.Center
     ) {
-        // Subtle grip line indicator
+        // Grip line indicator
         Box(
             modifier = Modifier
-                .size(width = 24.dp, height = 4.dp)
+                .size(width = 24.dp, height = 3.dp)
                 .clip(RoundedCornerShape(2.dp))
-                .background(NeonCyan.copy(alpha = 0.5f))
+                .background(TungstenAmber.copy(alpha = 0.5f))
         )
     }
 }
@@ -687,14 +700,14 @@ private fun CornerResizeHandle(
             .testTag(testTag),
         contentAlignment = Alignment.Center
     ) {
-        // Glowing handle pill
+        // Precision handle marker
         Box(
             modifier = Modifier
-                .size(20.dp)
-                .shadow(8.dp, CircleShape)
-                .clip(CircleShape)
-                .background(NeonCyan)
-                .border(2.dp, TextWhite, CircleShape)
+                .size(16.dp)
+                .shadow(8.dp, RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp))
+                .background(TungstenAmber)
+                .border(1.dp, ObsidianBlack, RoundedCornerShape(4.dp))
         )
     }
 }

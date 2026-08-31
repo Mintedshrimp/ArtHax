@@ -2,33 +2,64 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Formal Executive Slate & Modern Professional Palette
-val CyberBlack = Color(0xFF0B0F17)
-val CyberBackground = Color(0xFF0F172A)
-val CardBackground = Color(0xFF1E293B)
-val CardBackgroundElevated = Color(0xFF273549)
-val CardBackgroundGlass = Color(0xE61E293B)
+// ============================================================================
+// NEO-PRECISION DESIGN LANGUAGE: COLOR SYSTEM
+// High-density, monolithic obsidian & matte carbon surfaces with laser micro-accents
+// ============================================================================
 
-// Modern Professional Accents (Sapphire Blue, Indigo, Emerald)
-val NeonCyan = Color(0xFF3B82F6) // Sapphire / Royal Blue
-val NeonCyanDark = Color(0xFF2563EB)
-val NeonCyanGlow = Color(0x333B82F6)
+// 1. Obsidian & Matte Carbon Structural Foundations
+val ObsidianBlack = Color(0xFF070709)       // Deepest matte base viewport
+val MatteCarbon = Color(0xFF0D0E12)         // Primary surface container
+val CarbonElevated = Color(0xFF14161D)      // Elevated inspection panel
+val CarbonInteractive = Color(0xFF1C1E27)   // Interactive component fill
+val CarbonGlass = Color(0xE60D0E12)         // Translucent HUD backdrop
 
-val NeonPink = Color(0xFF6366F1) // Refined Indigo Accent
-val NeonPinkDark = Color(0xFF4F46E5)
-val NeonPinkGlow = Color(0x336366F1)
+// 2. Laser-Precision Telemetry Accents
+val TungstenAmber = Color(0xFFFFB800)       // High-visibility primary telemetry amber
+val CobaltBeam = Color(0xFF388BFF)          // High-precision cobalt laser blue
+val SignalEmerald = Color(0xFF00E599)       // Active telemetry emerald status
+val LaserCrimson = Color(0xFFFF3355)        // Precision abort / warning crimson
+val QuantumViolet = Color(0xFFA855F7)       // Secondary spectrum accent
+val BlueprintCyan = Color(0xFF00D8F6)       // AR Guide / Blueprint laser line
 
-val NeonGreen = Color(0xFF10B981) // Emerald Success Green
-val NeonGreenGlow = Color(0x3310B981)
+// 3. Hairline & Grid Infrastructure
+val HairlineBorder = Color(0x1FFFFFFF)      // 1px micro-etched structural border (12% white)
+val HairlineBorderFocused = Color(0x4DFFFFFF) // High-contrast focused hairline border (30% white)
+val HairlineAmber = Color(0x40FFB800)       // Laser amber micro-border
+val HairlineCobalt = Color(0x40388BFF)      // Laser cobalt micro-border
+val PrecisionGrid = Color(0x0AFFFFFF)       // 4% blueprint drafting grid
 
-val NeonYellow = Color(0xFFF59E0B) // Warm Amber Warning
-val NeonPurple = Color(0xFF8B5CF6) // Soft Violet Accent
+// 4. High-Density Typography Spectrum
+val TextWhite = Color(0xFFF1F3F7)           // Primary crisp display text
+val TextMuted = Color(0xFF7A8394)           // Subdued secondary metadata
+val TextSubtle = Color(0xFF484F5E)          // Minimal tertiary telemetry
+val TextAmber = Color(0xFFFFB800)
+val TextCobalt = Color(0xFF60A5FA)
+val TextEmerald = Color(0xFF00E599)
 
-// High-Legibility Typography and Surface Colors
-val TextWhite = Color(0xFFF8FAFC)
-val TextMuted = Color(0xFF94A3B8)
-val TextCyan = Color(0xFF60A5FA)
-val BorderGlass = Color(0x3394A3B8)
-val GridLine = Color(0x1F94A3B8)
-val SurfaceDark = Color(0xFF131C2E)
+// 5. Backwards-Compatible Semantic Mappings
+val CyberBlack = ObsidianBlack
+val CyberBackground = MatteCarbon
+val CardBackground = MatteCarbon
+val CardBackgroundElevated = CarbonElevated
+val CardBackgroundGlass = CarbonGlass
+val SurfaceDark = ObsidianBlack
+val BorderGlass = HairlineBorder
+val GridLine = PrecisionGrid
+
+val NeonCyan = CobaltBeam
+val NeonCyanDark = Color(0xFF1E60D0)
+val NeonCyanGlow = Color(0x26388BFF)
+
+val NeonPink = LaserCrimson
+val NeonPinkDark = Color(0xFFD01B3B)
+val NeonPinkGlow = Color(0x26FF3355)
+
+val NeonGreen = SignalEmerald
+val NeonGreenGlow = Color(0x2600E599)
+
+val NeonYellow = TungstenAmber
+val NeonPurple = QuantumViolet
+val TextCyan = CobaltBeam
+
 
