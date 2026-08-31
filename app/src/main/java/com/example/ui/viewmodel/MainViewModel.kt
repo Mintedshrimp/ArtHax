@@ -381,4 +381,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         context.startActivity(intent)
     }
+
+    /**
+     * Opens Android App Info (Application Details Settings).
+     * Critical for Android 13+ to allow users to tap the top-right 3 dots
+     * and select "Allow restricted settings" to enable the Accessibility Service.
+     */
+    fun openAppInfoSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
 }

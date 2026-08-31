@@ -25,19 +25,32 @@ android {
 
   signingConfigs {
     create("release") {
-      val envPath = System.getenv("KEYSTORE_PATH")
+      val envPath = System.getenv("KEYSTORE_PATH") ?: (project.findProperty("KEYSTORE_PATH") as? String)
       val keystoreFile = when {
         envPath != null && file(envPath).exists() -> file(envPath)
         envPath != null && rootProject.file(envPath).exists() -> rootProject.file(envPath)
         file("my-upload-key.jks").exists() -> file("my-upload-key.jks")
         rootProject.file("my-upload-key.jks").exists() -> rootProject.file("my-upload-key.jks")
         file("${rootDir}/my-upload-key.jks").exists() -> file("${rootDir}/my-upload-key.jks")
+        file("debug.keystore").exists() -> file("debug.keystore")
+        rootProject.file("debug.keystore").exists() -> rootProject.file("debug.keystore")
+        file("${rootDir}/debug.keystore").exists() -> file("${rootDir}/debug.keystore")
         else -> file("my-upload-key.jks")
       }
       storeFile = keystoreFile
-      storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
-      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: "upload"
-      keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+      storePassword = System.getenv("KEYSTORE_PASSWORD")
+        ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)
+        ?: System.getenv("RELEASE_KEYSTORE_PASSWORD")
+        ?: "android"
+      keyAlias = System.getenv("KEYSTORE_ALIAS")
+        ?: (project.findProperty("KEYSTORE_ALIAS") as? String)
+        ?: System.getenv("RELEASE_KEYSTORE_ALIAS")
+        ?: System.getenv("KEY_ALIAS")
+        ?: "upload"
+      keyPassword = System.getenv("KEY_PASSWORD")
+        ?: (project.findProperty("KEY_PASSWORD") as? String)
+        ?: System.getenv("RELEASE_KEY_PASSWORD")
+        ?: "android"
     }
     create("debugConfig") {
       val debugFile = when {

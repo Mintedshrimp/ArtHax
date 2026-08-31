@@ -36,10 +36,10 @@ jobs:
       contents: write
 
     env:
-      KEYSTORE: ${{ secrets.KEYSTORE }}
-      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+      RAW_KEYSTORE: ${{ secrets.KEYSTORE || secrets.KEYSTORE_BASE64 || secrets.SIGNING_KEYSTORE || secrets.RELEASE_KEYSTORE || secrets.ANDROID_KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || secrets.RELEASE_KEYSTORE_PASSWORD || secrets.KEY_PASSWORD || 'android' }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || secrets.RELEASE_KEY_PASSWORD || secrets.KEYSTORE_PASSWORD || 'android' }}
+      KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || secrets.RELEASE_KEYSTORE_ALIAS || secrets.KEY_ALIAS || 'upload' }}
 
     steps:
       - name: Checkout Repository
@@ -89,10 +89,6 @@ jobs:
           
           echo "Current parsed: Major=$MAJOR, Minor=$MINOR, Patch=$PATCH"
           
-          # Rollover logic:
-          # if x.9.9 -> (x+1).0.0
-          # else if x.x.9 -> x.(x+1).0
-          # else -> x.x.(x+1)
           if [ "$PATCH" -ge 9 ] && [ "$MINOR" -ge 9 ]; then
             NEW_MAJOR=$((MAJOR + 1))
             NEW_MINOR=0
@@ -123,48 +119,89 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Prepare Signing Keystores
+        id: prep_keystore
         run: |
-          # Restore or generate debug.keystore
+          mkdir -p app
+          # 1. Restore debug.keystore if present
           if [ -f "debug.keystore.base64" ]; then
-            base64 -d debug.keystore.base64 > debug.keystore
+            cat debug.keystore.base64 | tr -d '\r\n ' | base64 -d > debug.keystore
             cp debug.keystore app/debug.keystore 2>/dev/null || true
           elif [ ! -f "debug.keystore" ]; then
             keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" 2>&1 || true
             cp debug.keystore app/debug.keystore 2>/dev/null || true
           fi
 
-          # Prepare release upload keystore from base64 KEYSTORE secret (or fallback if secret not set)
-          if [ -n "${{ secrets.KEYSTORE }}" ]; then
-            echo "${{ secrets.KEYSTORE }}" | base64 -d > app/my-upload-key.jks
-            cp app/my-upload-key.jks my-upload-key.jks 2>/dev/null || true
-          else
-            if [ ! -f "app/my-upload-key.jks" ] && [ ! -f "my-upload-key.jks" ]; then
+          # 2. Extract and decode organization / repo secret keystore
+          if [ -n "$RAW_KEYSTORE" ]; then
+            echo "Decoding release keystore from organization/repository secret..."
+            echo "$RAW_KEYSTORE" | tr -d '\r\n ' | base64 -d > app/my-upload-key.jks
+            if [ -s "app/my-upload-key.jks" ]; then
+              cp app/my-upload-key.jks my-upload-key.jks 2>/dev/null || true
+              echo "has_release_keystore=true" >> $GITHUB_OUTPUT
+              echo "✅ Organization/repository release keystore prepared successfully."
+            else
+              echo "⚠️ Keystore base64 decoding resulted in an empty file. Falling back to debug keystore."
               cp debug.keystore app/my-upload-key.jks
               cp debug.keystore my-upload-key.jks 2>/dev/null || true
+              echo "has_release_keystore=false" >> $GITHUB_OUTPUT
             fi
+          else
+            echo "ℹ️ No custom release keystore secret provided. Using debug keystore for signed artifact generation."
+            cp debug.keystore app/my-upload-key.jks
+            cp debug.keystore my-upload-key.jks 2>/dev/null || true
+            echo "has_release_keystore=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build APK (Release / Assemble)
-        if: env.KEYSTORE == ''
+      - name: Build Release APK
         run: |
-          gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace
+          gradle assembleRelease --stacktrace
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android' }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
-          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || 'upload' }}
+          KEYSTORE_PATH: "my-upload-key.jks"
+          KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ env.KEYSTORE_ALIAS }}
+          KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
 
-      - name: Build & Sign APK (with Keystore)
-        if: env.KEYSTORE != ''
+      - name: Verify APK Signatures & Prepare Release Artifacts
         run: |
-          gradle signingConfigs.release.storeFile=app/my-upload-key.jks \
-            signingConfigs.release.storePassword="${{ secrets.KEYSTORE_PASSWORD }}" \
-            signingConfigs.release.keyAlias="${{ secrets.KEYSTORE_ALIAS }}" \
-            signingConfigs.release.keyPassword="${{ secrets.KEY_PASSWORD }}" \
-            assembleRelease --stacktrace
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          echo "Inspecting generated APK files..."
+          ls -la app/build/outputs/apk/release/ || true
+
+          RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$RELEASE_APK" ]; then
+            echo "❌ CRITICAL: assembleRelease did not produce any APK!"
+            exit 1
+          fi
+
+          echo "Target APK to verify: $RELEASE_APK"
+
+          # Verify signature using apksigner or jarsigner
+          APKSIGNER_BIN=""
+          if command -v apksigner >/dev/null 2>&1; then
+            APKSIGNER_BIN="apksigner"
+          elif [ -n "$ANDROID_SDK_ROOT" ] && [ -d "$ANDROID_SDK_ROOT/build-tools" ]; then
+            APKSIGNER_BIN=$(find "$ANDROID_SDK_ROOT/build-tools" -name apksigner | sort -V | tail -n 1)
+          fi
+
+          if [ -n "$APKSIGNER_BIN" ]; then
+            echo "Verifying signature via $APKSIGNER_BIN..."
+            "$APKSIGNER_BIN" verify --verbose "$RELEASE_APK" || {
+              echo "❌ APK signature verification failed!"
+              exit 1
+            }
+          else
+            echo "Verifying signature via jarsigner..."
+            jarsigner -verify -verbose -certs "$RELEASE_APK" || {
+              echo "❌ Jarsigner signature verification failed!"
+              exit 1
+            }
+          fi
+
+          echo "✅ APK signature verified successfully!"
+
+          # Copy to standardized filenames for release attachment
+          TAG_NAME="${{ steps.version_bump.outputs.tag_name }}"
+          cp "$RELEASE_APK" "app/build/outputs/apk/release/ArtHax-${TAG_NAME}.apk"
+          cp "$RELEASE_APK" "app/build/outputs/apk/release/app-release.apk"
 
       - name: Archive Build Artifacts
         uses: actions/upload-artifact@v4
@@ -181,9 +218,9 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: "Release ${{ steps.version_bump.outputs.tag_name }}"
           files: |
-            app/build/outputs/apk/release/*-signed.apk
+            app/build/outputs/apk/release/ArtHax-*.apk
+            app/build/outputs/apk/release/app-release.apk
             app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/debug/*.apk
           fail_on_unmatched_files: false
           generate_release_notes: true
           draft: false

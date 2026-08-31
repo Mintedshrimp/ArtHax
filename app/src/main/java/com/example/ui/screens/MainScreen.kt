@@ -33,15 +33,19 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Crop
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,6 +59,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -117,6 +122,7 @@ fun MainScreen(
     var showSettingsSheet by remember { mutableStateOf(false) }
     var showPuterAuthSheet by remember { mutableStateOf(false) }
     var showPuterLoginDialog by remember { mutableStateOf(initialShowLoginDialog) }
+    var showRestrictedSettingsDialog by remember { mutableStateOf(false) }
 
     val allPermissionsReady = overlayGranted && accessibilityEnabled
 
@@ -549,6 +555,120 @@ fun MainScreen(
                 }
             }
 
+            // ==========================================
+            // RESTRICTED SETTINGS ONBOARDING ASSISTANT (Android 13+)
+            // ==========================================
+            if (!accessibilityEnabled) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, TungstenAmber.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                        .testTag("restricted_settings_helper_card"),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = CarbonElevated)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = TungstenAmber,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "RESTRICTED SETTINGS ASSISTANT",
+                                    color = TungstenAmber,
+                                    fontSize = 11.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+                            IconButton(
+                                onClick = { showRestrictedSettingsDialog = true },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.HelpOutline,
+                                    contentDescription = "Help Guide",
+                                    tint = TungstenAmber,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "On Android 13+, Accessibility services for sideloaded APKs are locked by default ('Restricted setting'). Use these 2 steps to unlock:",
+                            color = TextMuted,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.openAppInfoSettings() },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(34.dp)
+                                    .testTag("open_app_info_btn"),
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = CobaltBeam)
+                            ) {
+                                Text(
+                                    text = "1. OPEN APP INFO",
+                                    fontSize = 10.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextWhite
+                                )
+                            }
+
+                            Button(
+                                onClick = { viewModel.openAccessibilitySettings() },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(34.dp)
+                                    .testTag("open_accessibility_btn"),
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = TungstenAmber)
+                            ) {
+                                Text(
+                                    text = "2. TURN SERVICE ON",
+                                    fontSize = 10.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ObsidianBlack
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "💡 Step 1: In App Info, tap ⋮ (top-right) -> 'Allow restricted settings'\n💡 Step 2: In Accessibility, find 'ArtHax Drawing Service' -> Turn ON",
+                            color = TextWhite.copy(alpha = 0.75f),
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(10.dp))
 
             // PUTER.JS AUTH CARD (Minimalist Neo-Precision)
@@ -731,6 +851,99 @@ fun MainScreen(
             PuterAuthSheet(
                 viewModel = puterAuthViewModel,
                 onDismiss = { showPuterAuthSheet = false }
+            )
+        }
+
+        // ==========================================
+        // RESTRICTED SETTINGS GUIDE DIALOG (Android 13+)
+        // ==========================================
+        if (showRestrictedSettingsDialog) {
+            AlertDialog(
+                onDismissRequest = { showRestrictedSettingsDialog = false },
+                containerColor = MatteCarbon,
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = TungstenAmber,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Unblock Restricted Settings",
+                            color = TextWhite,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                    }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Android 13, 14, and 15 automatically restrict Accessibility services for apps installed outside Google Play. Here is how to unlock ArtHax in 15 seconds:",
+                            color = TextMuted,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = CarbonElevated,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, HairlineCobalt),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = "1️⃣ Tap 'OPEN APP INFO' below",
+                                    color = CobaltBeam,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                                Text(
+                                    text = "2️⃣ In the top right corner, tap the 3 vertical dots (⋮)",
+                                    color = TextWhite,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "3️⃣ Select 'Allow restricted settings' and verify with fingerprint/PIN",
+                                    color = SignalEmerald,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = "4️⃣ Return to ArtHax, tap 'TURN SERVICE ON' and toggle ArtHax Drawing Service ON",
+                                    color = TungstenAmber,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showRestrictedSettingsDialog = false
+                            viewModel.openAppInfoSettings()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = CobaltBeam),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text("OPEN APP INFO", color = TextWhite, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showRestrictedSettingsDialog = false }
+                    ) {
+                        Text("CLOSE", color = TextMuted, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                    }
+                }
             )
         }
     }
