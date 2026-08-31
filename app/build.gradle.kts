@@ -42,10 +42,11 @@ android {
         ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)
         ?: System.getenv("RELEASE_KEYSTORE_PASSWORD")
         ?: "android"
-      keyAlias = System.getenv("KEYSTORE_ALIAS")
+      keyAlias = System.getenv("KEY_ALIAS")
+        ?: System.getenv("KEYSTORE_ALIAS")
+        ?: (project.findProperty("KEY_ALIAS") as? String)
         ?: (project.findProperty("KEYSTORE_ALIAS") as? String)
         ?: System.getenv("RELEASE_KEYSTORE_ALIAS")
-        ?: System.getenv("KEY_ALIAS")
         ?: "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
         ?: (project.findProperty("KEY_PASSWORD") as? String)

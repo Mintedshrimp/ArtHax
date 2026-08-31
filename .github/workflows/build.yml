@@ -38,8 +38,9 @@ jobs:
     env:
       RAW_KEYSTORE: ${{ secrets.KEYSTORE || secrets.KEYSTORE_BASE64 || secrets.SIGNING_KEYSTORE || secrets.RELEASE_KEYSTORE || secrets.ANDROID_KEYSTORE_BASE64 }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || secrets.RELEASE_KEYSTORE_PASSWORD || secrets.KEY_PASSWORD || 'android' }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS || secrets.KEYSTORE_ALIAS || secrets.RELEASE_KEYSTORE_ALIAS || 'upload' }}
+      KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS || secrets.KEYSTORE_ALIAS || secrets.RELEASE_KEYSTORE_ALIAS || 'upload' }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || secrets.RELEASE_KEY_PASSWORD || secrets.KEYSTORE_PASSWORD || 'android' }}
-      KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || secrets.RELEASE_KEYSTORE_ALIAS || secrets.KEY_ALIAS || 'upload' }}
 
     steps:
       - name: Checkout Repository
@@ -158,6 +159,7 @@ jobs:
         env:
           KEYSTORE_PATH: "my-upload-key.jks"
           KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ env.KEY_ALIAS }}
           KEYSTORE_ALIAS: ${{ env.KEYSTORE_ALIAS }}
           KEY_PASSWORD: ${{ env.KEY_PASSWORD }}
 

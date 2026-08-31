@@ -1,11 +1,11 @@
 # 📐 ArtHax - Neo-Precision AI Auto-Drawing Vector Instrument for Android
 
-[![GitHub Stars](https://img.shields.io/github/stars/ms/arthax?style=for-the-badge&logo=github&color=FFB800&labelColor=070709)](https://github.com/ms/arthax/stargazers)
-[![Release](https://img.shields.io/github/v/release/ms/arthax?style=for-the-badge&color=00E599&labelColor=070709)](https://github.com/ms/arthax/releases/latest)
+[![GitHub Stars](https://img.shields.io/github/stars/Mintedshrimp/arthax?style=for-the-badge&logo=github&color=FFB800&labelColor=070709)](https://github.com/Mintedshrimp/arthax/stargazers)
+[![Release](https://img.shields.io/github/v/release/Mintedshrimp/arthax?style=for-the-badge&color=00E599&labelColor=070709)](https://github.com/Mintedshrimp/arthax/releases/latest)
 [![License](https://img.shields.io/badge/License-Non--Commercial%20Source--Available-388BFF?style=for-the-badge&labelColor=070709)](LICENSE)
 
 <p align="center">
-  <a href="https://github.com/ms/arthax/releases/latest/download/app-release.apk">
+  <a href="https://github.com/Mintedshrimp/arthax/releases/latest/download/app-release.apk">
     <img src="https://img.shields.io/badge/⚡_DIRECT_DOWNLOAD-APK_RELEASE_(LATEST)-FFB800?style=for-the-badge&logo=android&logoColor=black" alt="Direct Download APK" height="42" />
   </a>
 </p>
@@ -73,12 +73,17 @@ ArtHax departs from generic, over-simplified corporate design systems as well as
 
 ---
 
-## 📄 License & Terms of Use
+## 📄 License, Copyright & Terms of Use
+
+Copyright (c) 2026 **Mintedshrimp** (https://github.com/Mintedshrimp). All rights reserved.
 
 This project is licensed under the **ArtHax Non-Commercial & Source-Available Public License (NC-SAL)**.
 
+- **Author & Copyright**: Authored and maintained by **Mintedshrimp**.
+- **No Warranty**: Provided strictly "AS IS" without warranty of any kind.
+- **Limitation of Liability & Misuse**: The author is not responsible or liable for any misuse, policy infringement, or actions committed by users or third parties.
 - **Non-Commercial Restriction**: You are strictly prohibited from selling, renting, or charging money for this application, any derivative binaries, or repackaged versions.
-- **Fork Responsibility & Compliance**: The original authors do not encourage, endorse, or accept legal liability for any third-party forks, unofficial modifications, or misuse of this codebase. All fork creators are independently and solely responsible for their own code.
+- **Fork Responsibility**: Fork creators and distributors are solely and independently liable for their own modifications.
 
-See [`LICENSE`](LICENSE) for the full legal text.
+See [`COPYRIGHT`](COPYRIGHT) and [`LICENSE`](LICENSE) for complete legal terms.
 
