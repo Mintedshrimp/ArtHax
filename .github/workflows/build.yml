@@ -35,6 +35,12 @@ jobs:
     permissions:
       contents: write
 
+    env:
+      KEYSTORE: ${{ secrets.KEYSTORE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -148,7 +154,7 @@ jobs:
 
       - name: Sign APK (if Keystore Secret is configured)
         id: sign_app
-        if: ${{ secrets.KEYSTORE != '' }}
+        if: env.KEYSTORE != ''
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/release
