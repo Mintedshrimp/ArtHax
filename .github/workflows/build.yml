@@ -129,7 +129,7 @@ jobs:
             base64 -d debug.keystore.base64 > debug.keystore
             cp debug.keystore app/debug.keystore 2>/dev/null || true
           elif [ ! -f "debug.keystore" ]; then
-            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US" 2>&1 || true
             cp debug.keystore app/debug.keystore 2>/dev/null || true
           fi
 
@@ -145,6 +145,7 @@ jobs:
           fi
 
       - name: Build APK (Release / Assemble)
+        if: env.KEYSTORE == ''
         run: |
           gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace
         env:
@@ -152,16 +153,18 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || 'upload' }}
 
-      - name: Sign APK (if Keystore Secret is configured)
-        id: sign_app
+      - name: Build & Sign APK (with Keystore)
         if: env.KEYSTORE != ''
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE }}
-          alias: ${{ secrets.KEYSTORE_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          gradle signingConfigs.release.storeFile=app/my-upload-key.jks \
+            signingConfigs.release.storePassword="${{ secrets.KEYSTORE_PASSWORD }}" \
+            signingConfigs.release.keyAlias="${{ secrets.KEYSTORE_ALIAS }}" \
+            signingConfigs.release.keyPassword="${{ secrets.KEY_PASSWORD }}" \
+            assembleRelease --stacktrace
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
 
       - name: Archive Build Artifacts
         uses: actions/upload-artifact@v4
