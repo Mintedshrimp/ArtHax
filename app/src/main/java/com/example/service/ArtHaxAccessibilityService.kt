@@ -94,48 +94,72 @@ class ArtHaxAccessibilityService : AccessibilityService() {
                     val stroke = strokesToDraw[strokeIdx]
                     if (stroke.points.isEmpty()) continue
 
-                    // Build path in screen coordinates
+                    // Build smooth gesture path with Spline/Quadratic interpolation
                     val path = Path()
-                    var isFirst = true
+                    val pts = stroke.points
 
-                    for (ptIdx in stroke.points.indices) {
-                        val pt = stroke.points[ptIdx]
-                        val sx = canvasLeft + (pt.x * canvasWidth)
-                        val sy = canvasTop + (pt.y * canvasHeight)
+                    if (settings.executionProfile == com.example.model.ExecutionProfile.ORGANIC_HUMAN && pts.size >= 3) {
+                        // Smooth Catmull-Rom / Bezier spline interpolation for natural human hand strokes
+                        val firstX = canvasLeft + (pts[0].x * canvasWidth)
+                        val firstY = canvasTop + (pts[0].y * canvasHeight)
+                        path.moveTo(firstX, firstY)
 
-                        if (isFirst) {
-                            path.moveTo(sx, sy)
-                            isFirst = false
-                        } else {
-                            path.lineTo(sx, sy)
+                        for (i in 1 until pts.size) {
+                            val prev = pts[i - 1]
+                            val curr = pts[i]
+                            val px = canvasLeft + (prev.x * canvasWidth)
+                            val py = canvasTop + (prev.y * canvasHeight)
+                            val cx = canvasLeft + (curr.x * canvasWidth)
+                            val cy = canvasTop + (curr.y * canvasHeight)
+                            val midX = (px + cx) * 0.5f
+                            val midY = (py + cy) * 0.5f
+                            path.quadTo(px, py, midX, midY)
                         }
+                        val lastPt = pts.last()
+                        path.lineTo(canvasLeft + (lastPt.x * canvasWidth), canvasTop + (lastPt.y * canvasHeight))
+                    } else {
+                        // Linear direct path (Cyber Turbo)
+                        var isFirst = true
+                        for (pt in pts) {
+                            val sx = canvasLeft + (pt.x * canvasWidth)
+                            val sy = canvasTop + (pt.y * canvasHeight)
+                            if (isFirst) {
+                                path.moveTo(sx, sy)
+                                isFirst = false
+                            } else {
+                                path.lineTo(sx, sy)
+                            }
+                        }
+                    }
 
-                        drawnPoints++
-                        val progress = drawnPoints.toFloat() / totalPoints.coerceAtLeast(1)
+                    drawnPoints += pts.size
+                    val progress = drawnPoints.toFloat() / totalPoints.coerceAtLeast(1)
 
-                        withContext(Dispatchers.Main) {
-                            onStateUpdate(
-                                ExecutionState.Drawing(
-                                    currentStrokeIndex = strokeIdx + 1,
-                                    totalStrokes = totalStrokes,
-                                    currentPointIndex = drawnPoints,
-                                    totalPoints = totalPoints,
-                                    progress = progress,
-                                    activePoint = pt,
-                                    activeColorHex = stroke.colorHex
-                                )
+                    withContext(Dispatchers.Main) {
+                        onStateUpdate(
+                            ExecutionState.Drawing(
+                                currentStrokeIndex = strokeIdx + 1,
+                                totalStrokes = totalStrokes,
+                                currentPointIndex = drawnPoints,
+                                totalPoints = totalPoints,
+                                progress = progress,
+                                activePoint = pts.lastOrNull(),
+                                activeColorHex = stroke.colorHex
                             )
-                        }
+                        )
                     }
 
                     if (stroke.isClosed) {
                         path.close()
                     }
 
-                    // Calculate dynamic duration based on stroke length & speed
+                    // Dynamic duration based on ExecutionProfile and PenType
                     val pointCount = stroke.points.size
-                    val baseDuration = (pointCount * 18L).coerceIn(40L, 350L)
-                    val adjustedDuration = (baseDuration / settings.speedMultiplier).toLong().coerceAtLeast(25L)
+                    val baseDuration = when (settings.executionProfile) {
+                        com.example.model.ExecutionProfile.CYBER_TURBO -> (pointCount * 8L).coerceIn(25L, 120L)
+                        com.example.model.ExecutionProfile.ORGANIC_HUMAN -> (pointCount * 22L).coerceIn(60L, 400L)
+                    }
+                    val adjustedDuration = (baseDuration / settings.speedMultiplier).toLong().coerceAtLeast(20L)
 
                     // Dispatch gesture
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -160,8 +184,12 @@ class ArtHaxAccessibilityService : AccessibilityService() {
                         }
                     }
 
-                    // Delay between individual strokes
-                    val strokeDelay = (settings.strokeDelayMs / settings.speedMultiplier).toLong().coerceAtLeast(5L)
+                    // Delay between individual strokes (Turbo = 5ms, Organic = natural micro-pause)
+                    val baseDelay = when (settings.executionProfile) {
+                        com.example.model.ExecutionProfile.CYBER_TURBO -> 5L
+                        com.example.model.ExecutionProfile.ORGANIC_HUMAN -> settings.strokeDelayMs.coerceAtLeast(15L)
+                    }
+                    val strokeDelay = (baseDelay / settings.speedMultiplier).toLong().coerceAtLeast(4L)
                     delay(strokeDelay)
                 }
 

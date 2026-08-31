@@ -166,6 +166,79 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ArtHaxOverlayService.updateSettings(settings)
     }
 
+    fun setCanvasPreset(preset: com.example.model.CanvasPreset) {
+        val updated = _drawingSettings.value.copy(selectedCanvasPreset = preset)
+        _drawingSettings.value = updated
+        _calibrationBounds.value = preset.bounds
+        ArtHaxOverlayService.updateSettings(updated)
+    }
+
+    fun setPenType(penType: com.example.model.PenType) {
+        val updated = _drawingSettings.value.copy(penType = penType)
+        _drawingSettings.value = updated
+        ArtHaxOverlayService.updateSettings(updated)
+    }
+
+    fun setThicknessMode(mode: com.example.model.ThicknessMode, width: Float = _drawingSettings.value.manualStrokeWidth) {
+        val updated = _drawingSettings.value.copy(thicknessMode = mode, manualStrokeWidth = width)
+        _drawingSettings.value = updated
+        ArtHaxOverlayService.updateSettings(updated)
+    }
+
+    fun setExecutionProfile(profile: com.example.model.ExecutionProfile) {
+        val updated = _drawingSettings.value.copy(executionProfile = profile)
+        _drawingSettings.value = updated
+        ArtHaxOverlayService.updateSettings(updated)
+    }
+
+    fun toggleGhostTracing() {
+        val updated = _drawingSettings.value.copy(ghostTracingMode = !_drawingSettings.value.ghostTracingMode)
+        _drawingSettings.value = updated
+        ArtHaxOverlayService.updateSettings(updated)
+    }
+
+    /**
+     * AI-Less Image-to-Vector Auto-Trace Engine.
+     * Traces loaded image contours or tapped segments directly on-device.
+     */
+    fun traceImageBitmap(
+        bitmap: android.graphics.Bitmap,
+        isTapSegment: Boolean = false,
+        tapX: Float = 0.5f,
+        tapY: Float = 0.5f,
+        title: String = "Imported Image"
+    ) {
+        viewModelScope.launch {
+            _executionState.value = ExecutionState.Generating(0.5f, "Extracting vector contours...")
+            val result = if (isTapSegment) {
+                com.example.ai.ImageTraceEngine.traceTappedSubject(
+                    bitmap = bitmap,
+                    tapNormX = tapX,
+                    tapNormY = tapY,
+                    subjectLabel = title
+                )
+            } else {
+                com.example.ai.ImageTraceEngine.traceFullImageContours(
+                    bitmap = bitmap,
+                    title = title
+                )
+            }
+
+            _currentInstructionSet.value = result
+            _executionState.value = ExecutionState.Ready(result)
+
+            val msg = ChatMessage(
+                sender = ChatSender.SYSTEM,
+                text = "Vectorized '${result.title}' into ${result.activeStrokes.size} stroke paths across ${result.layers.size} layers (AI-Less Engine).",
+                isInstructionGenerated = true,
+                instructionSet = result
+            )
+            val list = _chatMessages.value.toMutableList()
+            list.add(msg)
+            _chatMessages.value = list
+        }
+    }
+
     fun setCalibrationBounds(bounds: CalibrationBounds) {
         _calibrationBounds.value = bounds
     }

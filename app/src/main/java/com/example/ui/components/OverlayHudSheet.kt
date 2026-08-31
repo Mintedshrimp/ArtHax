@@ -505,7 +505,7 @@ fun OverlayHudSheet(
                             Icon(imageVector = Icons.Default.Speed, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Drawing Speed",
+                                text = "Drawing Speed (${settings.executionProfile.displayName})",
                                 color = TextMuted,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -530,6 +530,73 @@ fun OverlayHudSheet(
                         ),
                         modifier = Modifier.testTag("speed_slider")
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // PEN TYPE BUBBLES
+                    Text(
+                        text = "Pen Style / Brush",
+                        color = TextMuted,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        com.example.model.PenType.values().forEach { pen ->
+                            val isSel = settings.penType == pen
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackground,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                modifier = Modifier.clickable { onUpdateSettings(settings.copy(penType = pen)) }
+                            ) {
+                                Text(
+                                    text = pen.displayName,
+                                    color = if (isSel) TextWhite else TextMuted,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // GHOST TRACING AR OVERLAY TOGGLE
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                text = "Ghost Tracing (Light Table AR)",
+                                color = if (settings.ghostTracingMode) NeonCyan else TextWhite,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Overlay blueprint for manual tracing",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                        }
+                        androidx.compose.material3.Switch(
+                            checked = settings.ghostTracingMode,
+                            onCheckedChange = { onUpdateSettings(settings.copy(ghostTracingMode = it)) },
+                            colors = androidx.compose.material3.SwitchDefaults.colors(
+                                checkedThumbColor = NeonCyan,
+                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
                 }
             }
         }

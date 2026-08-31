@@ -122,6 +122,7 @@ fun DrawingCanvas(
     executionState: ExecutionState,
     modifier: Modifier = Modifier,
     bounds: CalibrationBounds? = null,
+    settings: com.example.model.DrawingSettings? = null,
     showGrid: Boolean = true,
     showStrokeIndices: Boolean = false,
     interactiveGlow: Boolean = false,
@@ -136,6 +137,7 @@ fun DrawingCanvas(
     var isLayerManagerOpen by remember { mutableStateOf(false) }
     var activeLayerId by remember { mutableStateOf<String?>(null) }
     var isGridActive by remember { mutableStateOf(showGrid) }
+    var isGhostTracingActive by remember { mutableStateOf(settings?.ghostTracingMode ?: false) }
 
     // Synchronize layers from incoming instruction set
     val currentLayers = remember(instructionSet) {
@@ -242,23 +244,27 @@ fun DrawingCanvas(
 
             // 3. Render Pre-Buffered Vector Layers with state-based Path compilation
             val activeDrawing = executionState as? ExecutionState.Drawing
+            val effectiveOpacityMultiplier = if (isGhostTracingActive) (settings?.ghostTracingOpacity ?: 0.65f) else 1.0f
 
             currentLayers.forEach { layer ->
                 if (layer.isVisible) {
-                    val layerOpacity = layer.opacity.coerceIn(0f, 1f)
+                    val layerOpacity = (layer.opacity * effectiveOpacityMultiplier).coerceIn(0f, 1f)
 
                     layer.strokes.forEachIndexed { sIdx, stroke ->
                         val isCurrentStroke = activeDrawing?.currentStrokeIndex == (sIdx + 1)
-                        val isDrawnStroke = activeDrawing == null || sIdx < (activeDrawing.currentStrokeIndex - 1)
+                        val isDrawnStroke = isGhostTracingActive || activeDrawing == null || sIdx < (activeDrawing.currentStrokeIndex - 1)
 
                         if (isDrawnStroke || isCurrentStroke) {
-                            val maxPts = if (isCurrentStroke) activeDrawing.currentPointIndex else stroke.points.size
+                            val maxPts = if (isGhostTracingActive) stroke.points.size else if (isCurrentStroke) activeDrawing.currentPointIndex else stroke.points.size
                             drawBufferedLayerStroke(
                                 stroke = stroke,
                                 canvasW = canvasW,
                                 canvasH = canvasH,
                                 layerOpacity = layerOpacity,
-                                maxPointsToDraw = maxPts
+                                maxPointsToDraw = maxPts,
+                                penType = settings?.penType ?: com.example.model.PenType.BALLPOINT,
+                                manualWidth = if (settings?.thicknessMode == com.example.model.ThicknessMode.MANUAL) settings.manualStrokeWidth else null,
+                                isGhost = isGhostTracingActive
                             )
                         }
                     }
@@ -266,7 +272,7 @@ fun DrawingCanvas(
             }
 
             // 4. Stylus / Laser Reticle Indicator when drawing is active
-            if (executionState is ExecutionState.Drawing && executionState.activePoint != null) {
+            if (executionState is ExecutionState.Drawing && executionState.activePoint != null && !isGhostTracingActive) {
                 val pt = executionState.activePoint
                 val posX = pt.x * canvasW
                 val posY = pt.y * canvasH
@@ -858,7 +864,10 @@ private fun DrawScope.drawBufferedLayerStroke(
     canvasW: Float,
     canvasH: Float,
     layerOpacity: Float,
-    maxPointsToDraw: Int
+    maxPointsToDraw: Int,
+    penType: com.example.model.PenType = com.example.model.PenType.BALLPOINT,
+    manualWidth: Float? = null,
+    isGhost: Boolean = false
 ) {
     if (stroke.points.size < 2) return
     val pts = stroke.points.take(maxPointsToDraw)
@@ -866,6 +875,20 @@ private fun DrawScope.drawBufferedLayerStroke(
 
     val baseColor = stroke.parseColor()
     val finalColor = baseColor.copy(alpha = baseColor.alpha * layerOpacity)
+
+    val effectiveWidth = manualWidth ?: when (penType) {
+        com.example.model.PenType.BALLPOINT -> stroke.strokeWidth.coerceIn(1.5f, 4f)
+        com.example.model.PenType.BRUSH -> (stroke.strokeWidth * 1.5f).coerceIn(3.5f, 10f)
+        com.example.model.PenType.MARKER -> (stroke.strokeWidth * 2.2f).coerceIn(6f, 22f)
+        com.example.model.PenType.PENCIL -> (stroke.strokeWidth * 0.8f).coerceIn(1.2f, 3.5f)
+        com.example.model.PenType.CYBER_NEON -> (stroke.strokeWidth * 1.2f).coerceIn(2.5f, 8f)
+    }
+
+    val cap = when (penType) {
+        com.example.model.PenType.MARKER -> StrokeCap.Square
+        com.example.model.PenType.BALLPOINT -> StrokeCap.Round
+        else -> StrokeCap.Round
+    }
 
     val path = Path()
     path.moveTo(pts[0].x * canvasW, pts[0].y * canvasH)
@@ -883,25 +906,100 @@ private fun DrawScope.drawBufferedLayerStroke(
         path.close()
     }
 
-    // Subtle soft background depth stroke
-    drawPath(
-        path = path,
-        color = finalColor.copy(alpha = finalColor.alpha * 0.25f),
-        style = Stroke(
-            width = stroke.strokeWidth + 2f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+    // Ghost Holographic Tracing Mode: Wide diffuse neon aura + crisp inner line
+    if (isGhost) {
+        // Outer holographic neon bloom
+        drawPath(
+            path = path,
+            color = finalColor.copy(alpha = (finalColor.alpha * 0.4f).coerceIn(0.1f, 0.7f)),
+            style = Stroke(
+                width = effectiveWidth + 6f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
+        // Center laser tracing guide
+        drawPath(
+            path = path,
+            color = Color.White.copy(alpha = (finalColor.alpha * 0.9f).coerceIn(0.2f, 1.0f)),
+            style = Stroke(
+                width = (effectiveWidth * 0.6f).coerceAtLeast(1.5f),
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        return
+    }
 
-    // Solid vector line
-    drawPath(
-        path = path,
-        color = finalColor,
-        style = Stroke(
-            width = stroke.strokeWidth,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
-        )
-    )
+    // Standard Render Modes
+    when (penType) {
+        com.example.model.PenType.CYBER_NEON -> {
+            // Neon Glow layer
+            drawPath(
+                path = path,
+                color = finalColor.copy(alpha = finalColor.alpha * 0.35f),
+                style = Stroke(
+                    width = effectiveWidth + 5f,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round
+                )
+            )
+            // Core
+            drawPath(
+                path = path,
+                color = finalColor,
+                style = Stroke(
+                    width = effectiveWidth,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round
+                )
+            )
+        }
+        com.example.model.PenType.MARKER -> {
+            // Semi-transparent Chisel marker overlap
+            drawPath(
+                path = path,
+                color = finalColor.copy(alpha = (finalColor.alpha * 0.65f).coerceIn(0.2f, 1f)),
+                style = Stroke(
+                    width = effectiveWidth,
+                    cap = StrokeCap.Square,
+                    join = StrokeJoin.Bevel
+                )
+            )
+        }
+        com.example.model.PenType.PENCIL -> {
+            // Soft pencil texture
+            drawPath(
+                path = path,
+                color = finalColor.copy(alpha = (finalColor.alpha * 0.75f).coerceIn(0.2f, 1f)),
+                style = Stroke(
+                    width = effectiveWidth,
+                    cap = StrokeCap.Round,
+                    join = StrokeJoin.Round,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 1.5f))
+                )
+            )
+        }
+        else -> {
+            // Solid vector line with soft backing
+            drawPath(
+                path = path,
+                color = finalColor.copy(alpha = finalColor.alpha * 0.25f),
+                style = Stroke(
+                    width = effectiveWidth + 2f,
+                    cap = cap,
+                    join = StrokeJoin.Round
+                )
+            )
+            drawPath(
+                path = path,
+                color = finalColor,
+                style = Stroke(
+                    width = effectiveWidth,
+                    cap = cap,
+                    join = StrokeJoin.Round
+                )
+            )
+        }
+    }
 }

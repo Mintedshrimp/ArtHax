@@ -201,11 +201,50 @@ sealed class ExecutionState {
 }
 
 /**
+ * Pen style and pressure simulation profile
+ */
+enum class PenType(val displayName: String, val baseWidth: Float, val iconDescription: String) {
+    BALLPOINT("Fineliner / Ink", 2.5f, "Crisp precision inking"),
+    BRUSH("Calligraphy Brush", 5.5f, "Dynamic pressure & taper"),
+    MARKER("Chisel Marker", 10.0f, "Broad stroke shading"),
+    PENCIL("Graphite Sketch", 2.0f, "Soft textured lines"),
+    CYBER_NEON("Neon Glow", 4.0f, "Vibrant dual-halo vector")
+}
+
+/**
+ * Thickness mode: dynamic AI calculated vs manual user slider
+ */
+enum class ThicknessMode(val displayName: String) {
+    AUTO_AI("Auto AI Width"),
+    MANUAL("Manual Slider")
+}
+
+/**
+ * Execution speed profile and gesture personality
+ */
+enum class ExecutionProfile(val displayName: String, val description: String) {
+    CYBER_TURBO("Cyber Turbo", "Maximum machine speed (5ms gesture interval)"),
+    ORGANIC_HUMAN("Organic Human", "Natural speedpaint motion with corner easing & micro-pauses")
+}
+
+/**
+ * Standard pre-calibrated canvas bounding boxes for instant alignment
+ */
+enum class CanvasPreset(val displayName: String, val bounds: CalibrationBounds) {
+    FREE_CROP("Free Custom Crop", CalibrationBounds(0.06f, 0.20f, 0.94f, 0.80f)),
+    SQUARE_1_1("Square 1:1 Canvas", CalibrationBounds(0.10f, 0.28f, 0.90f, 0.72f)),
+    FOSS_PAINT("FOSS Paint Viewport", CalibrationBounds(0.04f, 0.16f, 0.96f, 0.82f)),
+    IBIS_PAINT("Ibis Paint X Canvas", CalibrationBounds(0.08f, 0.18f, 0.92f, 0.80f)),
+    PORTRAIT_9_16("Tall Portrait (9:16)", CalibrationBounds(0.12f, 0.12f, 0.88f, 0.88f)),
+    LANDSCAPE_4_3("Landscape (4:3)", CalibrationBounds(0.06f, 0.32f, 0.94f, 0.68f))
+}
+
+/**
  * User customization and tuning parameters for stroke execution
  */
 data class DrawingSettings(
     val speedMultiplier: Float = 2.0f, // 0.5x to 5.0x
-    val strokeDelayMs: Long = 30L,     // delay between gestures
+    val strokeDelayMs: Long = 25L,     // delay between gestures
     val pointStepInterpolation: Int = 3, // point density
     val previewGlowIntensity: Float = 0.8f,
     val showPreviewOverlay: Boolean = true,
@@ -213,7 +252,14 @@ data class DrawingSettings(
     val vibrationFeedback: Boolean = true,
     val unrestrictedMode: Boolean = false, // Unrestricted Mode (prompts won't be blocked, great for 2D horror games)
     val copyrightBypassMode: Boolean = false, // Bypass copyright restrictions by veering prompt to clean non-copyright wording
-    val edgeHugging: Boolean = true // Snap floating bubble to closest screen edge when released
+    val edgeHugging: Boolean = true, // Snap floating bubble to closest screen edge when released
+    val penType: PenType = PenType.BALLPOINT,
+    val thicknessMode: ThicknessMode = ThicknessMode.AUTO_AI,
+    val manualStrokeWidth: Float = 3.5f,
+    val executionProfile: ExecutionProfile = ExecutionProfile.ORGANIC_HUMAN,
+    val ghostTracingMode: Boolean = false,
+    val ghostTracingOpacity: Float = 0.65f,
+    val selectedCanvasPreset: CanvasPreset = CanvasPreset.FREE_CROP
 )
 
 /**

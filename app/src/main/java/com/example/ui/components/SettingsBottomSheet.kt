@@ -3,6 +3,7 @@ package com.example.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -243,7 +244,7 @@ fun SettingsBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. DRAWING SPEED & CALIBRATION PREFERENCES
+            // 2. DRAWING & EXECUTION CONTROLS
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -253,6 +254,198 @@ fun SettingsBottomSheet(
                 colors = CardDefaults.cardColors(containerColor = CardBackground)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    // Execution Profile (Cyber Turbo vs Organic Human)
+                    Text(
+                        text = "DRAWING PERSONALITY & SPEED PROFILE",
+                        color = TextMuted,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        com.example.model.ExecutionProfile.values().forEach { profile ->
+                            val isSel = settings.executionProfile == profile
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isSel) (if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) NeonPink.copy(alpha = 0.2f) else NeonGreen.copy(alpha = 0.2f)) else CardBackgroundElevated,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) (if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) NeonPink else NeonGreen) else BorderGlass),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onUpdateSettings(settings.copy(executionProfile = profile)) }
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Text(
+                                        text = profile.displayName,
+                                        color = if (isSel) TextWhite else TextMuted,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
+                                    Text(
+                                        text = if (profile == com.example.model.ExecutionProfile.CYBER_TURBO) "Machine 5ms Turbo" else "Natural Speedpaint Easing",
+                                        color = TextMuted,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // PEN TYPE BUBBLES
+                    Text(
+                        text = "PEN TYPE / BRUSH STYLE",
+                        color = TextMuted,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        com.example.model.PenType.values().forEach { pen ->
+                            val isSel = settings.penType == pen
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackgroundElevated,
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                modifier = Modifier.clickable { onUpdateSettings(settings.copy(penType = pen)) }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isSel) NeonCyan else TextMuted)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = pen.displayName,
+                                        color = if (isSel) TextWhite else TextMuted,
+                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // STROKE THICKNESS MODE & SLIDER
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Stroke Thickness",
+                            color = TextWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            com.example.model.ThicknessMode.values().forEach { mode ->
+                                val isSel = settings.thicknessMode == mode
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isSel) NeonCyan.copy(alpha = 0.2f) else CardBackgroundElevated,
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, if (isSel) NeonCyan else BorderGlass),
+                                    modifier = Modifier.clickable { onUpdateSettings(settings.copy(thicknessMode = mode)) }
+                                ) {
+                                    Text(
+                                        text = mode.displayName,
+                                        color = if (isSel) NeonCyan else TextMuted,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (settings.thicknessMode == com.example.model.ThicknessMode.MANUAL) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Slider(
+                            value = settings.manualStrokeWidth,
+                            onValueChange = { onUpdateSettings(settings.copy(manualStrokeWidth = it)) },
+                            valueRange = 1.0f..25.0f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = NeonCyan,
+                                activeTrackColor = NeonCyan,
+                                inactiveTrackColor = CardBackgroundElevated
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // GHOST TRACING MODE (HOLOGRAPHIC AR GUIDE)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Ghost Tracing Mode (AR Guide)",
+                                    color = if (settings.ghostTracingMode) NeonCyan else TextWhite,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = NeonCyan.copy(alpha = 0.15f)
+                                ) {
+                                    Text(
+                                        text = "Light Table",
+                                        color = NeonCyan,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Projects semi-transparent glowing blueprints over paint apps so you can trace manually with your pen.",
+                                color = TextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+
+                        Switch(
+                            checked = settings.ghostTracingMode,
+                            onCheckedChange = { onUpdateSettings(settings.copy(ghostTracingMode = it)) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = NeonCyan,
+                                checkedTrackColor = NeonCyan.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderGlass))
+                    Spacer(modifier = Modifier.height(14.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
