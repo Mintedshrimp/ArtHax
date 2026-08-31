@@ -132,32 +132,57 @@ jobs:
             cp debug.keystore app/debug.keystore 2>/dev/null || true
           fi
 
+          FINAL_KS_PATH="my-upload-key.jks"
+          FINAL_KS_PASS="${KEYSTORE_PASSWORD:-android}"
+          FINAL_KEY_ALIAS="${KEY_ALIAS:-upload}"
+          FINAL_KEY_PASS="${KEY_PASSWORD:-android}"
+
           # 2. Extract and decode organization / repo secret keystore
           if [ -n "$RAW_KEYSTORE" ]; then
             echo "Decoding release keystore from organization/repository secret..."
             echo "$RAW_KEYSTORE" | tr -d '\r\n ' | base64 -d > app/my-upload-key.jks
             if [ -s "app/my-upload-key.jks" ]; then
               cp app/my-upload-key.jks my-upload-key.jks 2>/dev/null || true
+              
+              # Try to verify alias or auto-detect if specified alias doesn't exist
+              DETECTED_ALIAS=$(keytool -list -v -keystore app/my-upload-key.jks -storepass "$FINAL_KS_PASS" 2>/dev/null | grep 'Alias name:' | head -n 1 | awk -F': ' '{print $2}' | tr -d '\r\n ' || true)
+              if [ -n "$DETECTED_ALIAS" ]; then
+                echo "🔑 Detected keystore alias: $DETECTED_ALIAS"
+                FINAL_KEY_ALIAS="$DETECTED_ALIAS"
+              fi
+
               echo "has_release_keystore=true" >> $GITHUB_OUTPUT
               echo "✅ Organization/repository release keystore prepared successfully."
             else
               echo "⚠️ Keystore base64 decoding resulted in an empty file. Falling back to debug keystore."
               cp debug.keystore app/my-upload-key.jks
               cp debug.keystore my-upload-key.jks 2>/dev/null || true
+              FINAL_KS_PASS="android"
+              FINAL_KEY_ALIAS="androiddebugkey"
+              FINAL_KEY_PASS="android"
               echo "has_release_keystore=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "ℹ️ No custom release keystore secret provided. Using debug keystore for signed artifact generation."
+            echo "ℹ️ No custom release keystore secret received. Using debug keystore for signed artifact generation."
             cp debug.keystore app/my-upload-key.jks
             cp debug.keystore my-upload-key.jks 2>/dev/null || true
+            FINAL_KS_PASS="android"
+            FINAL_KEY_ALIAS="androiddebugkey"
+            FINAL_KEY_PASS="android"
             echo "has_release_keystore=false" >> $GITHUB_OUTPUT
           fi
+
+          echo "KEYSTORE_PATH=$FINAL_KS_PATH" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=$FINAL_KS_PASS" >> $GITHUB_ENV
+          echo "KEY_ALIAS=$FINAL_KEY_ALIAS" >> $GITHUB_ENV
+          echo "KEYSTORE_ALIAS=$FINAL_KEY_ALIAS" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=$FINAL_KEY_PASS" >> $GITHUB_ENV
 
       - name: Build Release APK
         run: |
           gradle assembleRelease --stacktrace
         env:
-          KEYSTORE_PATH: "my-upload-key.jks"
+          KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
           KEYSTORE_PASSWORD: ${{ env.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ env.KEY_ALIAS }}
           KEYSTORE_ALIAS: ${{ env.KEYSTORE_ALIAS }}
