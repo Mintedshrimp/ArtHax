@@ -791,7 +791,7 @@ fun SettingsBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("VERSION 1.2.0 (PUTER.JS)", color = TextMuted, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+                        Text("VERSION 1.1.0 (PUTER.JS)", color = TextMuted, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                         Text("NEO-PRECISION", color = TungstenAmber, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
                     }
                 }
