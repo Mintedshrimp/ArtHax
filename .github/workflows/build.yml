@@ -116,9 +116,35 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Prepare Signing Keystores
+        run: |
+          # Restore or generate debug.keystore
+          if [ -f "debug.keystore.base64" ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+            cp debug.keystore app/debug.keystore 2>/dev/null || true
+          elif [ ! -f "debug.keystore" ]; then
+            keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            cp debug.keystore app/debug.keystore 2>/dev/null || true
+          fi
+
+          # Prepare release upload keystore from base64 KEYSTORE secret (or fallback if secret not set)
+          if [ -n "${{ secrets.KEYSTORE }}" ]; then
+            echo "${{ secrets.KEYSTORE }}" | base64 -d > app/my-upload-key.jks
+            cp app/my-upload-key.jks my-upload-key.jks 2>/dev/null || true
+          else
+            if [ ! -f "app/my-upload-key.jks" ] && [ ! -f "my-upload-key.jks" ]; then
+              cp debug.keystore app/my-upload-key.jks
+              cp debug.keystore my-upload-key.jks 2>/dev/null || true
+            fi
+          fi
+
       - name: Build APK (Release / Assemble)
         run: |
           gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'android' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'android' }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS || 'upload' }}
 
       - name: Sign APK (if Keystore Secret is configured)
         id: sign_app
@@ -129,7 +155,7 @@ jobs:
           signingKeyBase64: ${{ secrets.KEYSTORE }}
           alias: ${{ secrets.KEYSTORE_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
           HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
 

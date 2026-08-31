@@ -35,8 +35,8 @@ android {
         else -> file("my-upload-key.jks")
       }
       storeFile = keystoreFile
-      storePassword = System.getenv("STORE_PASSWORD") ?: "android"
-      keyAlias = "upload"
+      storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
+      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: "upload"
       keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
     }
     create("debugConfig") {
