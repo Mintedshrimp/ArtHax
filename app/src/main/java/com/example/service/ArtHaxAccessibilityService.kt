@@ -79,8 +79,9 @@ class ArtHaxAccessibilityService : AccessibilityService() {
 
         activeDrawingJob = serviceScope.launch {
             try {
-                val totalStrokes = instructionSet.strokes.size
-                val totalPoints = instructionSet.totalEstimatedPoints
+                val strokesToDraw = instructionSet.activeStrokes
+                val totalStrokes = strokesToDraw.size
+                val totalPoints = strokesToDraw.sumOf { it.points.size }.coerceAtLeast(1)
                 var drawnPoints = 0
                 val startTime = System.currentTimeMillis()
 
@@ -90,7 +91,7 @@ class ArtHaxAccessibilityService : AccessibilityService() {
                 val canvasHeight = bounds.height * screenHeight
 
                 for (strokeIdx in 0 until totalStrokes) {
-                    val stroke = instructionSet.strokes[strokeIdx]
+                    val stroke = strokesToDraw[strokeIdx]
                     if (stroke.points.isEmpty()) continue
 
                     // Build path in screen coordinates

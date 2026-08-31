@@ -298,7 +298,7 @@ fun DraggableCutoutBox(
                 .testTag("edge_resize_top"),
             onDrag = { _, dyPx ->
                 val b = currentBounds
-                val newTop = ((boxTopPx + dyPx) / totalHeightPx).coerceIn(0.0f, b.bottom - 0.05f)
+                val newTop = (b.top + (dyPx / totalHeightPx)).coerceIn(0.0f, b.bottom - 0.05f)
                 currentOnBoundsChange(b.copy(top = newTop))
             }
         )
@@ -311,7 +311,7 @@ fun DraggableCutoutBox(
                 .testTag("edge_resize_bottom"),
             onDrag = { _, dyPx ->
                 val b = currentBounds
-                val newBottom = ((boxBottomPx + dyPx) / totalHeightPx).coerceIn(b.top + 0.05f, 1.0f)
+                val newBottom = (b.bottom + (dyPx / totalHeightPx)).coerceIn(b.top + 0.05f, 1.0f)
                 currentOnBoundsChange(b.copy(bottom = newBottom))
             }
         )
@@ -324,7 +324,7 @@ fun DraggableCutoutBox(
                 .testTag("edge_resize_left"),
             onDrag = { dxPx, _ ->
                 val b = currentBounds
-                val newLeft = ((boxLeftPx + dxPx) / totalWidthPx).coerceIn(0.0f, b.right - 0.05f)
+                val newLeft = (b.left + (dxPx / totalWidthPx)).coerceIn(0.0f, b.right - 0.05f)
                 currentOnBoundsChange(b.copy(left = newLeft))
             }
         )
@@ -337,7 +337,7 @@ fun DraggableCutoutBox(
                 .testTag("edge_resize_right"),
             onDrag = { dxPx, _ ->
                 val b = currentBounds
-                val newRight = ((boxRightPx + dxPx) / totalWidthPx).coerceIn(b.left + 0.05f, 1.0f)
+                val newRight = (b.right + (dxPx / totalWidthPx)).coerceIn(b.left + 0.05f, 1.0f)
                 currentOnBoundsChange(b.copy(right = newRight))
             }
         )
@@ -355,8 +355,8 @@ fun DraggableCutoutBox(
             testTag = "handle_top_left",
             onDrag = { dxPx, dyPx ->
                 val b = currentBounds
-                val newLeft = ((boxLeftPx + dxPx) / totalWidthPx).coerceIn(0.0f, b.right - 0.05f)
-                val newTop = ((boxTopPx + dyPx) / totalHeightPx).coerceIn(0.0f, b.bottom - 0.05f)
+                val newLeft = (b.left + (dxPx / totalWidthPx)).coerceIn(0.0f, b.right - 0.05f)
+                val newTop = (b.top + (dyPx / totalHeightPx)).coerceIn(0.0f, b.bottom - 0.05f)
                 currentOnBoundsChange(b.copy(left = newLeft, top = newTop))
             }
         )
@@ -370,8 +370,8 @@ fun DraggableCutoutBox(
             testTag = "handle_top_right",
             onDrag = { dxPx, dyPx ->
                 val b = currentBounds
-                val newRight = ((boxRightPx + dxPx) / totalWidthPx).coerceIn(b.left + 0.05f, 1.0f)
-                val newTop = ((boxTopPx + dyPx) / totalHeightPx).coerceIn(0.0f, b.bottom - 0.05f)
+                val newRight = (b.right + (dxPx / totalWidthPx)).coerceIn(b.left + 0.05f, 1.0f)
+                val newTop = (b.top + (dyPx / totalHeightPx)).coerceIn(0.0f, b.bottom - 0.05f)
                 currentOnBoundsChange(b.copy(right = newRight, top = newTop))
             }
         )
@@ -385,8 +385,8 @@ fun DraggableCutoutBox(
             testTag = "handle_bottom_left",
             onDrag = { dxPx, dyPx ->
                 val b = currentBounds
-                val newLeft = ((boxLeftPx + dxPx) / totalWidthPx).coerceIn(0.0f, b.right - 0.05f)
-                val newBottom = ((boxBottomPx + dyPx) / totalHeightPx).coerceIn(b.top + 0.05f, 1.0f)
+                val newLeft = (b.left + (dxPx / totalWidthPx)).coerceIn(0.0f, b.right - 0.05f)
+                val newBottom = (b.bottom + (dyPx / totalHeightPx)).coerceIn(b.top + 0.05f, 1.0f)
                 currentOnBoundsChange(b.copy(left = newLeft, bottom = newBottom))
             }
         )
@@ -400,8 +400,8 @@ fun DraggableCutoutBox(
             testTag = "handle_bottom_right",
             onDrag = { dxPx, dyPx ->
                 val b = currentBounds
-                val newRight = ((boxRightPx + dxPx) / totalWidthPx).coerceIn(b.left + 0.05f, 1.0f)
-                val newBottom = ((boxBottomPx + dyPx) / totalHeightPx).coerceIn(b.top + 0.05f, 1.0f)
+                val newRight = (b.right + (dxPx / totalWidthPx)).coerceIn(b.left + 0.05f, 1.0f)
+                val newBottom = (b.bottom + (dyPx / totalHeightPx)).coerceIn(b.top + 0.05f, 1.0f)
                 currentOnBoundsChange(b.copy(right = newRight, bottom = newBottom))
             }
         )

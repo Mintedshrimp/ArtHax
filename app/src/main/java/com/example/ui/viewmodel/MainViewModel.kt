@@ -197,18 +197,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Runs simulated stroke drawing inside the in-app sandbox canvas with live stylus pointer!
      */
+    fun updateInstructionSet(newSet: ArtHaxInstructionSet) {
+        _currentInstructionSet.value = newSet
+    }
+
     fun startSandboxSimulation() {
         val instructions = _currentInstructionSet.value ?: return
         activeSimJob?.cancel()
 
         activeSimJob = viewModelScope.launch {
-            val totalStrokes = instructions.strokes.size
-            val totalPoints = instructions.totalEstimatedPoints
+            val strokes = instructions.activeStrokes
+            val totalStrokes = strokes.size
+            val totalPoints = strokes.sumOf { it.points.size }.coerceAtLeast(1)
             var drawnPoints = 0
             val startTime = System.currentTimeMillis()
 
             for (sIdx in 0 until totalStrokes) {
-                val stroke = instructions.strokes[sIdx]
+                val stroke = strokes[sIdx]
                 for (pIdx in stroke.points.indices) {
                     val pt = stroke.points[pIdx]
                     drawnPoints++
