@@ -1,0 +1,36 @@
+# ArtHax Non-Commercial & Source-Available Public License (NC-SAL)
+
+Copyright (c) 2026 ArtHax Authors & Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or distribute
+copies of the Software, subject to the following express conditions:
+
+---
+
+### 1. Non-Commercial Restriction (Strict Prohibition on Monetization)
+Under no circumstances may this Software, any portion thereof, or any derivative 
+works, modified builds, or forks based on this Software be sold, monetized, rented, 
+leased, repackaged behind paywalls, or distributed for commercial gain or monetary compensation.
+The Software must remain entirely free of charge to all end users in all environments.
+
+### 2. Fork Responsibility & Compliance Disclaimer
+Any third-party modifications, adaptations, forks, rebuilds, redistributions, or 
+alternative distributions of this Software are the sole legal and technical responsibility 
+of the respective individuals or entities creating or publishing them. 
+
+The original authors and copyright holders:
+- Expressly discourage and condemn any unlawful, harmful, deceptive, or policy-violating modifications.
+- Bear zero legal, civil, or criminal liability for unauthorized modifications, fork codebases, or downstream misuse by third parties.
+- Do not endorse, warranty, or support any unofficial forks or altered binaries.
+
+### 3. As-Is & Warranty Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
