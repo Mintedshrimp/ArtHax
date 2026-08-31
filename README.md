@@ -22,12 +22,15 @@ Powered by a headless **Puter.js** neural bridge, ArtHax connects to world-class
 
 ## ✨ Key Features
 
-- **🌐 Puter.js Live Model Ecosystem**: Minimalist authentication dialog that syncs credentials and live-fetches available AI models directly through Puter API.
+- **🌐 Puter.js Live Model Ecosystem**: Minimalist authentication dialog that syncs credentials and live-fetches available AI models directly through Puter API (**Claude 3.7**, **Claude 3.5**, **DeepSeek R1/V3**, **Gemini 2.0 Flash**, **GPT-4o**).
+- **🖼️ AI-Less Image Contour & Tap-to-Segment Vectorizer**: Pick any photo, character sketch, or reference image from your gallery to automatically extract vector strokes completely on-device without needing network or API tokens. Tap specific subjects (characters, plants, tattoos) to isolate localized outlines.
+- **👻 Ghost Tracing Mode (AR Light Table HUD)**: Turn your screen into a holographic tracing table. Projects semi-transparent neon vector blueprints directly over FOSS Paint or Ibis Paint so you can manually trace with your physical stylus or finger.
+- **🖌️ Pen Type Selector & Dynamic Stroke Weights**: Choose between Fineliner/Ink, Calligraphy Brush, Chisel Marker, Graphite Pencil, and Cyber Neon Glow. Supports both **Auto AI Width** and manual precision thickness sliders.
+- **⚡ Cyber Turbo vs. Organic Human Speedpaint**: Toggle between maximum machine execution speed (5ms gesture interval) or organic speedpainting with natural Catmull-Rom/Bezier corner easing and micro-pauses.
+- **🎯 Canvas Profiles & Instant Alignment**: Quick-crop presets for **FOSS Paint**, **Ibis Paint X**, **Infinite Painter**, **Sketchbook**, and standard aspect ratios (`1:1 Square`, `9:16 Tall`, `4:3 Landscape`).
 - **🔥 Unrestricted Developer Mode**: Prompt filter bypass designed for game developers creating 2D horror games, dark fantasy monsters, combat effects, zombies, and gore sketches.
 - **🛡️ Smart Copyright Bypass Adapter**: Automatically veers and cleans prompts containing trademarked or copyrighted characters into descriptive stylized equivalents while retaining visual essence.
-- **🎯 Precision Canvas Cropping**: Top-right "Canvas" tool lets you drag and resize bounding calibration coordinates directly over your canvas view.
-- **🎈 Draggable Floating Bubble & Edge Hugging**: Floating bubble with optional physics snapping to screen edges for quick access while keeping your drawing canvas clear.
-- **⚡ High-Speed Procedural Vector Engine**: Offline fallback stroke synthesis engine generating intricate multi-color anime, cyberpunk, and fantasy vector strokes.
+- **🎈 Draggable Floating HUD & Edge Hugging**: Floating bubble with optional physics snapping to screen edges for quick access while keeping your drawing canvas clear.
 
 ---
 
@@ -37,20 +40,20 @@ Powered by a headless **Puter.js** neural bridge, ArtHax connects to world-class
 2. Install the APK on your Android device (Android 8.0+ recommended).
 3. Grant **Overlay Permission** (to render floating bubble and chat window).
 4. Enable **ArtHax Drawing Accessibility Service** in system settings (required to automate screen drawing gestures).
-5. Launch your favorite paint application, tap the floating bubble, and start generating!
+5. Launch your favorite paint application (FOSS Paint, Ibis Paint X, Sketchbook, etc.), position your canvas cutout, and start creating!
 
 ---
 
-## 🎯 Future Updates & Roadmap Goals
+## 🎯 Release Highlights & Roadmap Progress
 
-Here are the planned features and goals for upcoming releases:
-
-- [ ] **v1.1 - Multi-Layer Canvas Splitting**: Automatically organize generated vector strokes into separate background, line-art, and color fill layers.
-- [ ] **v1.2 - Custom Stylus Pressure Sensitivity**: Integrate variable line-weight modulation based on synthetic stylus pressure and velocity curves.
-- [ ] **v1.3 - SVG / JSON Import & Export**: Load custom SVG paths or export compiled ArtHax instruction sets to share with other artists.
-- [ ] **v1.4 - AI Inpainting & Reference Image Importer**: Load a photo or sketch reference for AI to trace or complete missing contours.
-- [ ] **v1.5 - Local On-Device ONNX Vectorizer**: Optional zero-latency offline neural model for complete offline vector generation without network.
-- [ ] **v1.6 - Palette Auto-Sampler**: Automatically extract color palettes from reference images and apply them to generated stroke sequences.
+- [x] **Multi-Layer Vector Organization**: Separate silhouette outlines, shading, and detail vector passes.
+- [x] **AI-Less Image-to-Vector & Tap-to-Segment**: Instant local contour vectorizer with Douglas-Peucker curve smoothing.
+- [x] **Ghost Tracing Hologram (AR Guide)**: Overlay neon vector outlines for manual hand tracing.
+- [x] **Pen Style & Pressure Profiles**: Dynamic taper, calligraphic curves, markers, and neon glows.
+- [x] **Speed Personality Modes**: Cyber Turbo (5ms machine speed) & Organic Human speedpainting.
+- [x] **Canvas App Presets**: Instant boundary calibration for FOSS Paint, Ibis Paint, and standard canvas ratios.
+- [ ] **Custom SVG / JSON Import & Export**: Import custom vector SVG paths or share compiled stroke sequences.
+- [ ] **Palette Auto-Sampler**: Automatically extract color palettes from reference photos and apply them to generated stroke sequences.
 
 ---
 
