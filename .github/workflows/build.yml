@@ -148,7 +148,7 @@ jobs:
 
       - name: Sign APK (if Keystore Secret is configured)
         id: sign_app
-        if: env.HAS_KEYSTORE == 'true'
+        if: ${{ secrets.KEYSTORE != '' }}
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/release
@@ -156,17 +156,6 @@ jobs:
           alias: ${{ secrets.KEYSTORE_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          HAS_KEYSTORE: ${{ secrets.KEYSTORE != '' }}
-
-      - name: Tag Git Commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          TAG="${{ steps.version_bump.outputs.tag_name }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "$TAG" || true
-          git push origin "$TAG" || true
 
       - name: Archive Build Artifacts
         uses: actions/upload-artifact@v4
@@ -180,11 +169,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version_bump.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           name: "Release ${{ steps.version_bump.outputs.tag_name }}"
           files: |
             app/build/outputs/apk/release/*-signed.apk
             app/build/outputs/apk/release/*.apk
             app/build/outputs/apk/debug/*.apk
+          fail_on_unmatched_files: false
           generate_release_notes: true
           draft: false
           prerelease: false
